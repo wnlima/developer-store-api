@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using FluentAssertions;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities;
@@ -71,12 +72,12 @@ public class UserTests
         // Arrange
         var user = new User
         {
-            Username = "", // Invalid: empty
-            Password = UserTestData.GenerateInvalidPassword(), // Invalid: doesn't meet password requirements
-            Email = UserTestData.GenerateInvalidEmail(), // Invalid: not a valid email
-            Phone = UserTestData.GenerateInvalidPhone(), // Invalid: doesn't match pattern
-            Status = UserStatus.Unknown, // Invalid: cannot be Unknown
-            Role = UserRole.None // Invalid: cannot be None
+            Username = "",
+            Password = UserTestData.GenerateInvalidPassword(),
+            Email = UserTestData.GenerateInvalidEmail(),
+            Phone = UserTestData.GenerateInvalidPhone(),
+            Status = UserStatus.Unknown,
+            Role = UserRole.None
         };
 
         // Act
@@ -85,5 +86,40 @@ public class UserTests
         // Assert
         Assert.False(result.IsValid);
         Assert.NotEmpty(result.Errors);
+    }
+
+    [Fact(DisplayName = "Given a new User When created Then should have a non-empty Id")]
+    public void Constructor_Should_Generate_NonEmptyId()
+    {
+        // Arrange & Act
+        var user = new User();
+        user.Id = Guid.NewGuid();
+
+        // Assert
+        user.Id.Should().NotBeEmpty();
+    }
+
+    [Fact(DisplayName = "Given valid user When deactivating Then Status should be Inactive and UpdatedAt should be set")]
+    public void Deactivate_ValidUser_SetsStatusToInactiveAndUpdatedAt()
+    {
+        // Arrange
+        var user = new User { Status = UserStatus.Active };
+
+        // Act
+        user.Deactivate();
+
+        // Assert
+        user.Status.Should().Be(UserStatus.Inactive);
+        user.UpdatedAt.Should().NotBeNull();
+    }
+
+    [Fact(DisplayName = "Given a user and null When comparing Then should return 1")]
+    public void CompareTo_NullUser_ShouldReturn1()
+    {
+        // Arrange
+        var user = new User { Username = "alice" };
+
+        // Act & Assert
+        Assert.True(user.CompareTo(null) == 1);
     }
 }
