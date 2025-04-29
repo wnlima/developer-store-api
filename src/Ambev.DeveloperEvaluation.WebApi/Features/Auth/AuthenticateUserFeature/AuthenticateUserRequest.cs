@@ -1,9 +1,11 @@
-﻿namespace Ambev.DeveloperEvaluation.WebApi.Features.Auth.AuthenticateUserFeature;
+﻿using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
+
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Auth.AuthenticateUserFeature;
 
 /// <summary>
 /// Represents the authentication request model for user login.
 /// </summary>
-public class AuthenticateUserRequest
+public class AuthenticateUserRequest : IAuthenticateUserFields
 {
     /// <summary>
     /// Gets or sets the user's email address for authentication.

@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Domain;
 using AutoMapper;
@@ -8,7 +9,7 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace Ambev.DeveloperEvaluation.Unit.Application;
+namespace Ambev.DeveloperEvaluation.Unit.Application.Users;
 
 /// <summary>
 /// Contains unit tests for the <see cref="CreateUserHandler"/> class.
@@ -159,5 +160,55 @@ public class CreateUserHandlerTests
             c.Phone == command.Phone &&
             c.Status == command.Status &&
             c.Role == command.Role));
+    }
+
+    [Fact(DisplayName = "Given existing email When creating user Then throws exception")]
+    public async Task Handle_ExistingEmail_ThrowsException()
+    {
+        // Arrange
+        var command = CreateUserHandlerTestData.GenerateValidCommand();
+        var existingUser = new User { Email = command.Email };
+
+        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<User?>(existingUser));
+
+        // Act
+        var act = () => _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"User with email {command.Email} already exists");
+    }
+
+    [Fact]
+    public void CreateUserCommand_To_User_Mapping_Should_Be_Valid()
+    {
+        // Arrange
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<CreateUserProfile>());
+        var mapper = config.CreateMapper();
+
+        var command = new CreateUserCommand
+        {
+            Username = "testuser",
+            Email = "test@example.com",
+            Password = "Password123!",
+            Phone = "+1234567890",
+            Status = UserStatus.Active,
+            Role = UserRole.Admin
+        };
+
+        // Act
+        var user = mapper.Map<User>(command);
+
+        // Assert
+        user.Should().BeEquivalentTo(new User
+        {
+            Username = "testuser",
+            Email = "test@example.com",
+            Phone = "+1234567890",
+            Status = UserStatus.Active,
+            Role = UserRole.Admin
+        }, options => options.Excluding(o => o.CreatedAt)
+                             .Excluding(o => o.Password));
     }
 }
