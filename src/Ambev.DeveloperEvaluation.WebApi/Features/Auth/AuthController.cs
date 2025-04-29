@@ -40,7 +40,7 @@ public class AuthController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> AuthenticateUser([FromBody] AuthenticateUserRequest request, CancellationToken cancellationToken)
     {
-        var validator = new AuthenticateUserRequestValidator();
+        var validator = new AuthenticateUserValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
