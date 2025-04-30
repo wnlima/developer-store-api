@@ -41,7 +41,7 @@ public class CreateUserHandlerTests
     {
         // Given
         var command = CreateUserHandlerTestData.GenerateValidCommand();
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = command.Username,
@@ -58,10 +58,10 @@ public class CreateUserHandlerTests
         };
 
 
-        _mapper.Map<User>(command).Returns(user);
+        _mapper.Map<UserEntity>(command).Returns(user);
         _mapper.Map<CreateUserResult>(user).Returns(result);
 
-        _userRepository.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
+        _userRepository.CreateAsync(Arg.Any<UserEntity>(), Arg.Any<CancellationToken>())
             .Returns(user);
         _passwordHasher.HashPassword(Arg.Any<string>()).Returns("hashedPassword");
 
@@ -71,7 +71,7 @@ public class CreateUserHandlerTests
         // Then
         createUserResult.Should().NotBeNull();
         createUserResult.Id.Should().Be(user.Id);
-        await _userRepository.Received(1).CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
+        await _userRepository.Received(1).CreateAsync(Arg.Any<UserEntity>(), Arg.Any<CancellationToken>());
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class CreateUserHandlerTests
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         var originalPassword = command.Password;
         const string hashedPassword = "h@shedPassw0rd";
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = command.Username,
@@ -111,8 +111,8 @@ public class CreateUserHandlerTests
             Role = command.Role
         };
 
-        _mapper.Map<User>(command).Returns(user);
-        _userRepository.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
+        _mapper.Map<UserEntity>(command).Returns(user);
+        _userRepository.CreateAsync(Arg.Any<UserEntity>(), Arg.Any<CancellationToken>())
             .Returns(user);
         _passwordHasher.HashPassword(originalPassword).Returns(hashedPassword);
 
@@ -122,7 +122,7 @@ public class CreateUserHandlerTests
         // Then
         _passwordHasher.Received(1).HashPassword(originalPassword);
         await _userRepository.Received(1).CreateAsync(
-            Arg.Is<User>(u => u.Password == hashedPassword),
+            Arg.Is<UserEntity>(u => u.Password == hashedPassword),
             Arg.Any<CancellationToken>());
     }
 
@@ -134,7 +134,7 @@ public class CreateUserHandlerTests
     {
         // Given
         var command = CreateUserHandlerTestData.GenerateValidCommand();
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = command.Username,
@@ -145,8 +145,8 @@ public class CreateUserHandlerTests
             Role = command.Role
         };
 
-        _mapper.Map<User>(command).Returns(user);
-        _userRepository.CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>())
+        _mapper.Map<UserEntity>(command).Returns(user);
+        _userRepository.CreateAsync(Arg.Any<UserEntity>(), Arg.Any<CancellationToken>())
             .Returns(user);
         _passwordHasher.HashPassword(Arg.Any<string>()).Returns("hashedPassword");
 
@@ -154,7 +154,7 @@ public class CreateUserHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Then
-        _mapper.Received(1).Map<User>(Arg.Is<CreateUserCommand>(c =>
+        _mapper.Received(1).Map<UserEntity>(Arg.Is<CreateUserCommand>(c =>
             c.Username == command.Username &&
             c.Email == command.Email &&
             c.Phone == command.Phone &&
@@ -167,10 +167,10 @@ public class CreateUserHandlerTests
     {
         // Arrange
         var command = CreateUserHandlerTestData.GenerateValidCommand();
-        var existingUser = new User { Email = command.Email };
+        var existingUser = new UserEntity { Email = command.Email };
 
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(existingUser));
+            .Returns(Task.FromResult<UserEntity?>(existingUser));
 
         // Act
         var act = () => _handler.Handle(command, CancellationToken.None);
@@ -198,10 +198,10 @@ public class CreateUserHandlerTests
         };
 
         // Act
-        var user = mapper.Map<User>(command);
+        var user = mapper.Map<UserEntity>(command);
 
         // Assert
-        user.Should().BeEquivalentTo(new User
+        user.Should().BeEquivalentTo(new UserEntity
         {
             Username = "testuser",
             Email = "test@example.com",

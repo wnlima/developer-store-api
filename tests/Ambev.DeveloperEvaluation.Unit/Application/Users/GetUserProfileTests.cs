@@ -21,7 +21,7 @@ public class GetUserProfileTests
     public void Map_User_To_GetUserResult_ShouldMapCorrectly()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = "testuser",

@@ -70,7 +70,7 @@ public class UserTests
     public void Given_InvalidUserData_When_Validated_Then_ShouldReturnInvalid()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Username = "",
             Password = UserTestData.GenerateInvalidPassword(),

@@ -4,9 +4,9 @@ namespace Ambev.DeveloperEvaluation.Domain.Events
 {
     public class UserRegisteredEvent
     {
-        public User User { get; }
+        public UserEntity User { get; }
 
-        public UserRegisteredEvent(User user)
+        public UserRegisteredEvent(UserEntity user)
         {
             User = user;
         }

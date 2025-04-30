@@ -57,7 +57,7 @@ public class GetUserHandlerTests
         var result = new GetUserResult { Id = user.Id };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _mapper.Map<GetUserResult>(user).Returns(result);
 
         // Act
@@ -75,7 +75,7 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(null));
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var act = () => _handler.Handle(command, CancellationToken.None);
@@ -94,7 +94,7 @@ public class GetUserHandlerTests
         var result = new GetUserResult { Id = user.Id, Role = user.Role };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _mapper.Map<GetUserResult>(user).Returns(result);
 
         // Act
@@ -115,7 +115,7 @@ public class GetUserHandlerTests
         var result = new GetUserResult { Id = user.Id, Status = user.Status };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _mapper.Map<GetUserResult>(user).Returns(result);
 
         // Act

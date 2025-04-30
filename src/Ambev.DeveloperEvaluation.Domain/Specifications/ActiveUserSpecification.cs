@@ -3,9 +3,9 @@ using Ambev.DeveloperEvaluation.Domain.Enums;
 
 namespace Ambev.DeveloperEvaluation.Domain.Specifications;
 
-public class ActiveUserSpecification : ISpecification<User>
+public class ActiveUserSpecification : ISpecification<UserEntity>
 {
-    public bool IsSatisfiedBy(User user)
+    public bool IsSatisfiedBy(UserEntity user)
     {
         return user.Status == UserStatus.Active;
     }

@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Domain.Validation;
 
-public class UserValidator : AbstractValidator<User>
+public class UserValidator : AbstractValidator<UserEntity>
 {
     public UserValidator()
     {

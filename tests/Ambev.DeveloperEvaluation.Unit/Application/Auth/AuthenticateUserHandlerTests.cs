@@ -32,10 +32,10 @@ public class AuthenticateUserHandlerTests
     {
         // Arrange
         var command = new AuthenticateUserCommand { Email = "test@example.com", Password = "password" };
-        var user = new User { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword", Status = UserStatus.Inactive };
+        var user = new UserEntity { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword", Status = UserStatus.Inactive };
 
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
 
         // Act
@@ -50,11 +50,11 @@ public class AuthenticateUserHandlerTests
     {
         // Arrange
         var command = new AuthenticateUserCommand { Email = "test@example.com", Password = "password" };
-        var user = new User { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword", Status = UserStatus.Active };
+        var user = new UserEntity { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword", Status = UserStatus.Active };
         var result = new AuthenticateUserResult { Token = "token" };
 
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
         _jwtTokenGenerator.GenerateToken(user).Returns("token");
         _mapper.Map<AuthenticateUserResult>(user).Returns(result);
@@ -74,7 +74,7 @@ public class AuthenticateUserHandlerTests
         var command = new AuthenticateUserCommand { Email = "invalid@example.com", Password = "password" };
 
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(null));
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var act = () => _handler.Handle(command, CancellationToken.None);
@@ -88,10 +88,10 @@ public class AuthenticateUserHandlerTests
     {
         // Arrange
         var command = new AuthenticateUserCommand { Email = "test@example.com", Password = "wrongPassword" };
-        var user = new User { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword" };
+        var user = new UserEntity { Id = Guid.NewGuid(), Email = command.Email, Password = "hashedPassword" };
 
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
+            .Returns(Task.FromResult<UserEntity?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(false);
 
         // Act
