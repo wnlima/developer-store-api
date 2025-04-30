@@ -20,9 +20,9 @@ public class CartConfiguration : IEntityTypeConfiguration<CartEntity>
         builder.Property(c => c.ModifiedAt)
             .IsRequired(false);
 
-        builder.HasOne<UserEntity>()
+        builder.HasOne(s => s.Customer)
             .WithMany()
-            .HasForeignKey(si => si.UserId)
+            .HasForeignKey(s => s.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
     }

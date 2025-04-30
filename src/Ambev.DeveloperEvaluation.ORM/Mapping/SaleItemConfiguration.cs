@@ -39,9 +39,9 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItemEntity>
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<UserEntity>()
+        builder.HasOne(s => s.Customer)
             .WithMany()
-            .HasForeignKey(si => si.UserId)
+            .HasForeignKey(s => s.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
     }
