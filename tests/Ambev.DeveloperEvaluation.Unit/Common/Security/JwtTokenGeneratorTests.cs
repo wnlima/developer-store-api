@@ -1,10 +1,10 @@
+using System.IdentityModel.Tokens.Jwt;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NSubstitute;
-using System.IdentityModel.Tokens.Jwt;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Common.Security;
@@ -26,7 +26,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_Should_Return_ValidToken()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = "testuser",

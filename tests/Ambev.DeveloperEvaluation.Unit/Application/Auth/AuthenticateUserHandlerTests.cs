@@ -1,12 +1,12 @@
 using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Common.Security;
 using AutoMapper;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
 
 namespace Ambev.DeveloperEvaluation.Unit.Application.Auth;
 

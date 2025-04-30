@@ -28,4 +28,8 @@
 		<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\Ambev.DeveloperEvaluation.Domain\Ambev.DeveloperEvaluation.Domain.csproj" />
+		<ProjectReference Include="..\Ambev.DeveloperEvaluation.Common.Abstractions\Ambev.DeveloperEvaluation.Common.Abstractions.csproj" />
+	</ItemGroup>
 </Project>

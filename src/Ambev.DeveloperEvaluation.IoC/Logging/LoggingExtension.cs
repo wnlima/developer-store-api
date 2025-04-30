@@ -10,7 +10,7 @@ using Serilog.Exceptions.EntityFrameworkCore.Destructurers;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Diagnostics;
 
-namespace Ambev.DeveloperEvaluation.Common.Logging;
+namespace Ambev.DeveloperEvaluation.IoC.Logging;
 
 
 

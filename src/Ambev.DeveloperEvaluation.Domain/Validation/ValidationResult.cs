@@ -1,6 +1,6 @@
 ﻿using FluentValidation.Results;
 
-namespace Ambev.DeveloperEvaluation.Common.Validation;
+namespace Ambev.DeveloperEvaluation.Domain.Validation;
 
 public class ValidationResultDetail
 {

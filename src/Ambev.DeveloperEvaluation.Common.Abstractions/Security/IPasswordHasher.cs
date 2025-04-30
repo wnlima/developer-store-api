@@ -1,4 +1,4 @@
-namespace Ambev.DeveloperEvaluation.Common.Security;
+namespace Ambev.DeveloperEvaluation.Common.Abstractions.Security;
 
 /// <summary>
 /// Provides functionality for hashing and verifying passwords.

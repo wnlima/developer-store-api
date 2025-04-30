@@ -1,6 +1,6 @@
-using Ambev.DeveloperEvaluation.Common.Security;
 using FluentAssertions;
 using Xunit;
+using Ambev.DeveloperEvaluation.Common.Security;
 
 namespace Ambev.DeveloperEvaluation.Unit.Common.Security;
 

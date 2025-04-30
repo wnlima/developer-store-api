@@ -1,10 +1,12 @@
+using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
+using Ambev.DeveloperEvaluation.Common.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace Ambev.DeveloperEvaluation.Common.Security
+namespace Ambev.DeveloperEvaluation.IoC
 {
     public static class AuthenticationExtension
     {
