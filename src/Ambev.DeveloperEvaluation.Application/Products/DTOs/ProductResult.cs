@@ -1,10 +1,7 @@
+using Ambev.DeveloperEvaluation.Domain.Entities;
+
 namespace Ambev.DeveloperEvaluation.Application.Products.DTOs;
 
-public class ProductResult
+public class ProductResult : ProductEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public decimal Price { get; set; }
-    public int QuantityInStock { get; set; }
 }

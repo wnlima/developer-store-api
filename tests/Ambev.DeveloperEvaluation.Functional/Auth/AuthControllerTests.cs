@@ -59,7 +59,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonConvert.DeserializeObject<JsonResponseWrapper<ApiResponseWithData<AuthenticateUserResult>>>(responseContent)!.Data;
+        var apiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<AuthenticateUserResult>>(responseContent);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);

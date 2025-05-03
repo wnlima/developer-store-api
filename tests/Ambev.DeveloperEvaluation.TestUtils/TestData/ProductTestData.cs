@@ -1,4 +1,4 @@
-using Ambev.DeveloperEvaluation.Application.Products.Commands;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Bogus;
 
 namespace Ambev.DeveloperEvaluation.TestUtils.TestData;
@@ -13,7 +13,7 @@ public static class ProductTestData
     /// <summary>
     /// Faker instance for generating CreateProductCommand objects with randomized and realistic data.
     /// </summary>
-    private static readonly Faker<CreateProductCommand> _createProductFaker = new Faker<CreateProductCommand>()
+    private static readonly Faker<ProductEntity> _createProductFaker = new Faker<ProductEntity>()
         .RuleFor(p => p.Name, f => f.Commerce.ProductName())
         .RuleFor(p => p.Description, f => f.Commerce.ProductDescription())
         .RuleFor(p => p.Price, f => f.Random.Decimal(1, 1000))
@@ -24,7 +24,7 @@ public static class ProductTestData
     /// </summary>
     /// <param name="count">The number of products to generate.</param>
     /// <returns>A list of CreateProductCommand objects.</returns>
-    public static List<CreateProductCommand> GenerateProducts(int count)
+    public static List<ProductEntity> GenerateProducts(int count)
     {
         return _createProductFaker.Generate(count);
     }
@@ -33,7 +33,7 @@ public static class ProductTestData
     /// Generates a single valid CreateProductCommand object.
     /// </summary>
     /// <returns>A CreateProductCommand object with valid data.</returns>
-    public static CreateProductCommand GenerateValidCommand()
+    public static ProductEntity GenerateValidCommand()
     {
         return _createProductFaker.Generate();
     }
