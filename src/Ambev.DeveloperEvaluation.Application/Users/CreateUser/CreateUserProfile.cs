@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 
@@ -14,6 +15,7 @@ public class CreateUserProfile : Profile
     public CreateUserProfile()
     {
         CreateMap<CreateUserCommand, UserEntity>();
-        CreateMap<UserEntity, CreateUserResult>();
+        CreateMap<UserEntity, CreateUserResult>()
+        .AfterMap((s, d, context) => new FullUserName(s.Username));
     }
 }

@@ -1,3 +1,6 @@
+using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.Domain.Validation;
+
 namespace Ambev.DeveloperEvaluation.Domain.Common;
 
 /// <summary>
@@ -22,5 +25,10 @@ public class BaseUserIdentityEntity
         }
 
         return other!.Id.CompareTo(Id);
+    }
+
+    public Task<IEnumerable<ValidationErrorDetail>> ValidateAsync(IValidatorService validator)
+    {
+        return validator.ValidateAsync(this);
     }
 }

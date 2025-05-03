@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Ambev.DeveloperEvaluation.IoC.ModuleInitializers;
 
@@ -12,12 +13,13 @@ public class InfrastructureModuleInitializer : IModuleInitializer
 {
     public void Initialize(WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<DefaultContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
-                )
-            );
+        if (!builder.Environment.IsEnvironment("Test"))
+            builder.Services.AddDbContext<DefaultContext>(options =>
+                    options.UseNpgsql(
+                        builder.Configuration.GetConnectionString("DefaultConnection"),
+                        b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
+                    )
+                );
 
         builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<DefaultContext>());
         builder.Services.AddScoped<IUserRepository, UserRepository>();

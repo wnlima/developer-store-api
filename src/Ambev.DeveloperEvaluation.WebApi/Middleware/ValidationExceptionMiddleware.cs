@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Validation;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using FluentValidation;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Middleware
@@ -8,10 +9,11 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
     public class ValidationExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-
-        public ValidationExceptionMiddleware(RequestDelegate next)
+        private readonly Serilog.ILogger _logger;
+        public ValidationExceptionMiddleware(RequestDelegate next, Serilog.ILogger logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -20,13 +22,26 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             {
                 await _next(context);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                await HandleGenericExceptionAsync(context, ex, StatusCodes.Status401Unauthorized);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                await HandleGenericExceptionAsync(context, ex, StatusCodes.Status404NotFound);
+            }
             catch (ValidationException ex)
             {
                 await HandleValidationExceptionAsync(context, ex);
             }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Request error");
+                await HandleGenericExceptionAsync(context, new Exception("Internal Server Error"), StatusCodes.Status500InternalServerError);
+            }
         }
 
-        private static Task HandleValidationExceptionAsync(HttpContext context, ValidationException exception)
+        private Task HandleValidationExceptionAsync(HttpContext context, ValidationException exception)
         {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -37,6 +52,28 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
                 Message = "Validation Failed",
                 Errors = exception.Errors
                     .Select(error => (ValidationErrorDetail)error)
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(response, jsonOptions));
+        }
+
+        private Task HandleGenericExceptionAsync(HttpContext context, Exception exception, int statusCode)
+        {
+            if (Debugger.IsAttached)
+                _logger.Error(exception, "Request error");
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+
+            var response = new ApiResponse
+            {
+                Success = false,
+                Message = exception.Message,
             };
 
             var jsonOptions = new JsonSerializerOptions

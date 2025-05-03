@@ -1,5 +1,6 @@
-using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Validation;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Repositories;
 
@@ -7,7 +8,7 @@ public interface IProductRepository
 {
     Task<ProductEntity> CreateAsync(ProductEntity product);
     Task<ProductEntity?> GetByIdAsync(Guid id);
-    Task<IPaginatedList<ProductEntity>> ListAsync(int pageNumber, int pageSize);
+    Task<PaginatedList<ProductEntity>> ListAsync(AbstractAdvancedFilter filter);
     Task UpdateAsync(ProductEntity product);
-    Task DeleteAsync(Guid id);
+    Task<bool> DeleteAsync(Guid id);
 }

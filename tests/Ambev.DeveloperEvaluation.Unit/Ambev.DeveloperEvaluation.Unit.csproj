@@ -37,6 +37,7 @@
 		<ProjectReference Include="..\..\src\Ambev.DeveloperEvaluation.Application\Ambev.DeveloperEvaluation.Application.csproj" />
 		<ProjectReference Include="..\..\src\Ambev.DeveloperEvaluation.ORM\Ambev.DeveloperEvaluation.ORM.csproj" />
 		<ProjectReference Include="..\..\src\Ambev.DeveloperEvaluation.Common\Ambev.DeveloperEvaluation.Common.csproj" />
+		<ProjectReference Include="..\Ambev.DeveloperEvaluation.TestUtils\Ambev.DeveloperEvaluation.TestUtils.csproj" />
 	</ItemGroup>
 
 </Project>

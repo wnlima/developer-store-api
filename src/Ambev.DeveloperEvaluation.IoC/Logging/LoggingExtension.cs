@@ -51,41 +51,50 @@ public static class LoggingExtension
     /// </remarks> 
     public static WebApplicationBuilder AddDefaultLogging(this WebApplicationBuilder builder)
     {
-        Log.Logger = new LoggerConfiguration().CreateLogger();
+        Log.Logger = ConfigureLogger(new LoggerConfiguration(), builder).CreateLogger();
+
         builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
         {
             loggerConfiguration
-                .ReadFrom.Configuration(hostingContext.Configuration)
-                .Enrich.WithMachineName()
-                .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-                .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
-                .Enrich.FromLogContext()
-                .Enrich.WithExceptionDetails(_destructuringOptionsBuilder)
-                .Filter.ByExcluding(_filterPredicate);
-
-            if (Debugger.IsAttached)
-            {
-                loggerConfiguration.Enrich.WithProperty("DebuggerAttached", Debugger.IsAttached);
-                loggerConfiguration.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}", theme: SystemConsoleTheme.Colored);
-            }
-            else
-            {
-                loggerConfiguration
-                    .WriteTo.Console
-                    (
-                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"
-                    )
-                    .WriteTo.File(
-                        "logs/log-.txt",
-                        rollingInterval: RollingInterval.Day,
-                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"
-                    );
-            }
+                .ReadFrom.Configuration(hostingContext.Configuration);
+            loggerConfiguration.ConfigureLogger(builder);
         });
 
         builder.Services.AddLogging();
 
         return builder;
+    }
+
+    static LoggerConfiguration ConfigureLogger(this LoggerConfiguration loggerConfiguration, WebApplicationBuilder builder)
+    {
+        loggerConfiguration
+            .Enrich.WithMachineName()
+            .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+            .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails(_destructuringOptionsBuilder)
+            .Filter.ByExcluding(_filterPredicate);
+
+        if (Debugger.IsAttached)
+        {
+            loggerConfiguration.Enrich.WithProperty("DebuggerAttached", Debugger.IsAttached);
+            loggerConfiguration.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}", theme: SystemConsoleTheme.Colored);
+        }
+        else
+        {
+            loggerConfiguration
+                .WriteTo.Console
+                (
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"
+                )
+                .WriteTo.File(
+                    "logs/log-.txt",
+                    rollingInterval: RollingInterval.Day,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"
+                );
+        }
+
+        return loggerConfiguration;
     }
 
     /// <summary>Adds middleware for Swagger documetation generation.</summary>
@@ -98,6 +107,5 @@ public static class LoggingExtension
         var mode = Debugger.IsAttached ? "Debug" : "Release";
         logger.LogInformation("Logging enabled for '{Application}' on '{Environment}' - Mode: {Mode}", app.Environment.ApplicationName, app.Environment.EnvironmentName, mode);
         return app;
-
     }
 }
