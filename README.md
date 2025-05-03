@@ -58,6 +58,11 @@ This section includes links to the detailed documentation for the different API 
 - [Users API](/.doc/users-api.md)
 - [Auth API](/.doc/auth-api.md)
 
+## Advanced Filtering
+Learn how the API supports dynamic filtering, ordering, and pagination for cleaner queries and extensible backends.
+
+See [Advanced Filtering Guide](/.doc/advanced-filtering.md)
+
 ## Project Structure
 This section describes the overall structure and organization of the project files and directories. 
 

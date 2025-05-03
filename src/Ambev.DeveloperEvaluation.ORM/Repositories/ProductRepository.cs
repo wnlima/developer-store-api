@@ -1,6 +1,8 @@
-using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Validation;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+using Ambev.DeveloperEvaluation.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
@@ -26,9 +28,9 @@ public class ProductRepository : IProductRepository
         return await _context.Products.FindAsync(id);
     }
 
-    public async Task<IPaginatedList<ProductEntity>> ListAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedList<ProductEntity>> ListAsync(AbstractAdvancedFilter filter)
     {
-        return await PaginatedList<ProductEntity>.CreateAsync(_context.Products.AsNoTracking(), pageNumber, pageSize);
+        return await _context.Products.AsNoTracking().CreatePaginatedListAsync(filter);
     }
 
     public async Task UpdateAsync(ProductEntity product)
@@ -37,13 +39,16 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
         var product = await GetByIdAsync(id);
         if (product != null)
         {
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+            return true;
         }
+
+        return false;
     }
 }
