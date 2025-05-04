@@ -9,7 +9,6 @@ using MediatR;
 using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 using Newtonsoft.Json;
-using Ambev.DeveloperEvaluation.TestUtils;
 
 namespace Ambev.DeveloperEvaluation.Functional.Auth;
 public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixture>

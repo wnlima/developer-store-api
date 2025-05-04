@@ -5,7 +5,6 @@ using System.Net;
 using Ambev.DeveloperEvaluation.Functional.Auxiliary;
 using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using Newtonsoft.Json;
-using Ambev.DeveloperEvaluation.TestUtils;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
 

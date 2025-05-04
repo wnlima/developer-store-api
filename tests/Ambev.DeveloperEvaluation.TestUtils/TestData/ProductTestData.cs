@@ -20,10 +20,10 @@ public static class ProductTestData
         .RuleFor(p => p.QuantityInStock, f => f.Random.Int(0, 100));
 
     /// <summary>
-    /// Generates a list of CreateProductCommand objects.
+    /// Generates a list of Product objects.
     /// </summary>
     /// <param name="count">The number of products to generate.</param>
-    /// <returns>A list of CreateProductCommand objects.</returns>
+    /// <returns>A list of Product objects.</returns>
     public static List<ProductEntity> GenerateProducts(int count)
     {
         return _createProductFaker.Generate(count);

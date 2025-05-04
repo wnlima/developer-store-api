@@ -7,32 +7,21 @@ using Newtonsoft.Json;
 using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using System.Net.Http.Json;
 using Ambev.DeveloperEvaluation.Application.Products.Commands;
-using Ambev.DeveloperEvaluation.ORM;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Ambev.DeveloperEvaluation.Functional.Products;
 public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixture>
 {
     private readonly HttpClientFixture _clientFixture;
-    private readonly DefaultContext _context;
-    private readonly IServiceScope _scope;
 
     public ProductsControllerTests(HttpClientFixture clientFixture)
     {
         _clientFixture = clientFixture;
-        _scope = _clientFixture.Services.CreateScope();
-        _context = _scope.ServiceProvider.GetRequiredService<DefaultContext>();
-        _clientFixture.ProductSeedDatabase().GetAwaiter().GetResult();
+        _clientFixture.BasicDataSeed().GetAwaiter().GetResult();
     }
 
-    public Task InitializeAsync()
-           => Task.CompletedTask;
-
-    public async Task DisposeAsync()
-    {
-        _scope.Dispose();
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
+    public Task DisposeAsync() => Task.CompletedTask;
 
     private async Task<PaginatedResponse<ProductResult>> DeserializePaginatedResponse(HttpResponseMessage response)
     {
@@ -56,7 +45,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         Assert.NotNull(apiResponse.Data);
         Assert.Equal(1, apiResponse.CurrentPage);
         Assert.Equal(10, apiResponse.TotalCount);
-        Assert.Equal(_context.Products.AsNoTracking().Count(), apiResponse.AvailableItems);
+        Assert.Equal(_clientFixture.DbContext.Products.AsNoTracking().Count(), apiResponse.AvailableItems);
     }
 
     [Fact(DisplayName = "ListProducts - Expect 200 OK and correct pagination when _page and _size are provided")]
@@ -75,7 +64,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         Assert.NotNull(apiResponse.Data);
         Assert.Equal(2, apiResponse.CurrentPage);
         Assert.Equal(5, apiResponse.TotalCount);
-        Assert.Equal(_context.Products.AsNoTracking().Count(), apiResponse.AvailableItems);
+        Assert.Equal(_clientFixture.DbContext.Products.AsNoTracking().Count(), apiResponse.AvailableItems);
     }
 
     [Fact(DisplayName = "ListProducts - Expect 200 OK and ordered results when _order is provided")]
@@ -105,7 +94,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Filtered_Results()
     {
         // Arrange
-        var expectd = _context.Products.AsNoTracking().First();
+        var expectd = _clientFixture.DbContext.Products.AsNoTracking().First();
         string filterValue = expectd.Name;
 
         // Act
@@ -130,7 +119,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Filtered_Results_Partial_Match()
     {
         // Arrange
-        var expectd = _context.Products.AsNoTracking().First();
+        var expectd = _clientFixture.DbContext.Products.AsNoTracking().First();
         string partialName = expectd.Name.Substring(0, 5);
 
         // Act
@@ -213,8 +202,8 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Results_Ordered_By_Multiple_Fields()
     {
         // Arrange
-        var firstExpectd = _context.Products.AsNoTracking().OrderByDescending(p => p.Price).ThenBy(p => p.Name).First();
-        var lastExpectd = _context.Products.AsNoTracking().OrderByDescending(p => p.Price).ThenBy(p => p.Name).Take(10).Last();
+        var firstExpectd = _clientFixture.DbContext.Products.AsNoTracking().OrderByDescending(p => p.Price).ThenBy(p => p.Name).First();
+        var lastExpectd = _clientFixture.DbContext.Products.AsNoTracking().OrderByDescending(p => p.Price).ThenBy(p => p.Name).Take(10).Last();
 
         // Act
         var response = await _clientFixture.Client.GetAsync("/api/products?_order=price desc,name asc");
@@ -247,7 +236,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var apiResponse = await _clientFixture.DeserializeSingleApiResponse(response);
+        var apiResponse = await _clientFixture.DeserializeApiResponseWithData<ProductResult>(response);
 
         if (apiResponse.Success)
             product.Id = apiResponse.Data.Id;
@@ -280,7 +269,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task GetProductById_Expect_200_OK_On_Successful_Product_Retrieval()
     {
         // Arrange
-        var product = _context.Products.AsNoTracking().First();
+        var product = _clientFixture.DbContext.Products.AsNoTracking().First();
 
         // Act
         var response = await _clientFixture.Client.GetAsync($"/api/products/{product.Id}");
@@ -288,7 +277,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var apiResponse = await _clientFixture.DeserializeSingleApiResponse(response);
+        var apiResponse = await _clientFixture.DeserializeApiResponseWithData<ProductResult>(response);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
@@ -314,7 +303,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task UpdateProduct_Expect_200_OK_On_Successful_Product_Update()
     {
         // Arrange
-        var product = _context.Products.AsNoTracking().First();
+        var product = _clientFixture.DbContext.Products.AsNoTracking().First();
 
         var updatedProduct = new UpdateProductCommand
         {
@@ -331,7 +320,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var apiResponse = await _clientFixture.DeserializeSingleApiResponse(response);
+        var apiResponse = await _clientFixture.DeserializeApiResponseWithData<ProductResult>(response);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
@@ -387,7 +376,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var product = ProductTestData.GenerateValidCommand();
         var createResponse = await _clientFixture.Client.PostAsJsonAsync("/api/products", product);
         createResponse.EnsureSuccessStatusCode();
-        var createdProduct = await _clientFixture.DeserializeSingleApiResponse(createResponse);
+        var createdProduct = await _clientFixture.DeserializeApiResponseWithData<ProductResult>(createResponse);
 
         // Act
         var response = await _clientFixture.Client.DeleteAsync($"/api/products/{createdProduct.Data.Id}");
