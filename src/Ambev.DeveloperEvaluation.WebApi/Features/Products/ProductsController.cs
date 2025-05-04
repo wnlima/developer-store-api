@@ -7,7 +7,6 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products.Commands;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.Validators;
 
-
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 
 /// <summary>

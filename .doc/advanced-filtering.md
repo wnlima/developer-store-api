@@ -1,8 +1,6 @@
 # Advanced Filtering, Ordering and Pagination - Documentation
 
-## 🌐 English Version
-
-### Purpose
+## Purpose
 
 This project implements a consistent and reusable pattern for filtering, ordering, and pagination in ASP.NET Core Web APIs. It ensures:
 
@@ -11,7 +9,7 @@ This project implements a consistent and reusable pattern for filtering, orderin
 * DRY principles (Don't Repeat Yourself) using base classes.
 * Input validation through FluentValidation.
 
-### Folder Structure
+## Folder Structure
 
 * `Host`: API layer (controllers, middlewares, etc.)
 * `Application`: Commands, queries, DTOs, validations.
@@ -20,9 +18,9 @@ This project implements a consistent and reusable pattern for filtering, orderin
 * `Infrastructure/ORM`: EF Core context, repositories.
 * `IoC`: Dependency injection configuration.
 
-### Key Components
+## Key Components
 
-#### `AbstractAdvancedFilter`
+### `AbstractAdvancedFilter`
 
 A base class for requests that include filtering, ordering and pagination.
 
@@ -36,14 +34,14 @@ public abstract class AbstractAdvancedFilter
 }
 ```
 
-#### `AbstractAdvancedFilterValidator<Entity, Request>`
+### `AbstractAdvancedFilterValidator<Entity, Request>`
 
 Validates incoming requests:
 
 * Ensures `PageNumber > 0` and `PageSize` is between 1 and 100.
 * Ensures all provided filters match public properties of the target `Entity`.
 
-#### Filtering Syntax (Query String)
+### Filtering Syntax (Query String)
 
 | Filter Type  | Example (Query String) | Result                   |
 | ------------ | ---------------------- | ------------------------ |
@@ -54,19 +52,19 @@ Validates incoming requests:
 | Greater Than | `?_minprice=10`        | `Price >= 10`            |
 | Less Than    | `?_maxprice=100`       | `Price <= 100`           |
 
-#### Ordering Syntax (Query String)
+### Ordering Syntax (Query String)
 
 * Use `_order` parameter with comma-separated fields.
 * Example: `?_order=price desc,name asc`
 
-#### Pagination
+### Pagination
 
 Handled automatically with:
 
-* `PageNumber` (default: 1)
-* `PageSize` (default: 10, max: 100)
+* `_page` (default: 1)
+* `_size` (default: 10, max: 100)
 
-### Example Endpoint
+## Example Endpoint
 
 ```csharp
 [HttpGet]
@@ -87,7 +85,7 @@ public async Task<IActionResult> ListProducts(CancellationToken cancellationToke
 }
 ```
 
-### Developer Onboarding Checklist ✅
+## Developer Onboarding Checklist ✅
 
 * Create a `Request` inheriting `AbstractAdvancedFilter`
 * Create a `Validator` inheriting `AbstractAdvancedFilterValidator<YourEntity, YourRequest>`

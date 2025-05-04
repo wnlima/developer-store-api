@@ -1,6 +1,8 @@
+using Ambev.DeveloperEvaluation.Domain.Common;
+
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.DTOs;
 
-public class GetProductByIdRequest
+public class GetProductByIdRequest : IIdentifier
 {
     public Guid Id { get; set; }
 

@@ -7,7 +7,7 @@ namespace Ambev.DeveloperEvaluation.Domain.Common;
 /// Defines the contract for representing a user's identity within the system.
 /// This class is used to access the user's unique identifier.
 /// </summary>
-public class BaseUserIdentityEntity
+public class BaseUserIdentityEntity : IIdentifier
 {
     public Guid Id { get; set; }
 

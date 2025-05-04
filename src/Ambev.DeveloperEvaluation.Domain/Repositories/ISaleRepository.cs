@@ -1,13 +1,8 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Repositories;
 
-public interface ISaleRepository
+public interface ISaleRepository : IGenericRepository<SaleEntity>
 {
-    Task<SaleEntity> CreateAsync(SaleEntity sale);
-    Task<SaleEntity?> GetByIdAsync(Guid id);
-    Task<PaginatedList<SaleEntity>> ListAsync(int pageNumber, int pageSize);
-    Task UpdateAsync(SaleEntity sale);
-    Task DeleteAsync(Guid id);
+    Task<SaleEntity?> GetDetailsAsync(Guid saleId, CancellationToken cancellationToken = default, bool track = false);
 }

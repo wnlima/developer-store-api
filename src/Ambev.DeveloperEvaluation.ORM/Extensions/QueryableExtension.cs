@@ -15,13 +15,13 @@ public static class QueryableExtension
         return new PaginatedList<T>(items, count, pageNumber, pageSize);
     }
 
-    public static async Task<PaginatedList<T>> CreatePaginatedListAsync<T>(this IQueryable<T> source, AbstractAdvancedFilter filter)
+    public static async Task<PaginatedList<T>> CreatePaginatedListAsync<T>(this IQueryable<T> source, AbstractAdvancedFilter filter, CancellationToken cancellationToken = default)
     {
         var query = source.ApplyDynamicFilters(filter.Filters);
         var count = await query.CountAsync();
         query = query.ApplyOrdering(filter.OrderBy);
 
-        var items = await query.Skip((filter.PageNumber - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync();
+        var items = await query.Skip((filter.PageNumber - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(cancellationToken);
         return new PaginatedList<T>(items, count, filter.PageNumber, filter.PageSize);
     }
 

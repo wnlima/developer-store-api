@@ -10,10 +10,13 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly Serilog.ILogger _logger;
-        public ValidationExceptionMiddleware(RequestDelegate next, Serilog.ILogger logger)
+        private readonly IWebHostEnvironment _env;
+
+        public ValidationExceptionMiddleware(RequestDelegate next, Serilog.ILogger logger, IWebHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -37,7 +40,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             catch (Exception ex)
             {
                 _logger.Error(ex, "Request error");
-                await HandleGenericExceptionAsync(context, new Exception("Internal Server Error"), StatusCodes.Status500InternalServerError);
+                await HandleGenericExceptionAsync(context, new Exception("Internal Server Error", ex), StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -64,9 +67,6 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
 
         private Task HandleGenericExceptionAsync(HttpContext context, Exception exception, int statusCode)
         {
-            if (Debugger.IsAttached)
-                _logger.Error(exception, "Request error");
-
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 
@@ -75,6 +75,9 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
                 Success = false,
                 Message = exception.Message,
             };
+
+            if (Debugger.IsAttached || _env.EnvironmentName == "Test")
+                response.Message = exception.ToString();
 
             var jsonOptions = new JsonSerializerOptions
             {

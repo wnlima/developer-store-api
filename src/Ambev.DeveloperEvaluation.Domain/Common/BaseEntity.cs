@@ -3,7 +3,7 @@ using Ambev.DeveloperEvaluation.Domain.Validation;
 
 namespace Ambev.DeveloperEvaluation.Domain.Common;
 
-public class BaseEntity : IComparable<BaseEntity>
+public class BaseEntity : IComparable<BaseEntity>, IIdentifier
 {
     public Guid Id { get; set; }
 

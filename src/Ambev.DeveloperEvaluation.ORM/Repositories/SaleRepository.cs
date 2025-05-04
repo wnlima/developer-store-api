@@ -1,51 +1,38 @@
-using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
-public class SaleRepository : ISaleRepository
+public class SaleRepository : GenericRepository<SaleEntity>, ISaleRepository
 {
-    private readonly DefaultContext _context;
-
-    public SaleRepository(DefaultContext context)
+    public SaleRepository(DefaultContext context) : base(context)
     {
-        _context = context;
     }
 
-    public async Task<SaleEntity> CreateAsync(SaleEntity sale)
+    public async Task Cancel(Guid saleId, CancellationToken cancellationToken = default)
     {
-        await _context.Sales.AddAsync(sale);
-        await _context.SaveChangesAsync();
-        return sale;
+        var saleToUpdate = new SaleEntity { Id = saleId, IsCancelled = true };
+        _context.Sales.Attach(saleToUpdate);
+        _context.Entry(saleToUpdate).Property(p => p.IsCancelled).IsModified = true;
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<SaleEntity?> GetByIdAsync(Guid id)
+    public async Task<SaleEntity?> GetDetailsAsync(Guid saleId, CancellationToken cancellationToken = default, bool track = false)
     {
-        return await _context.Sales
+        if (track)
+            return await _context.Sales
+                .Where(s => s.Id == saleId)
+                .Include(s => s.Customer)
+                .Include(s => s.SaleItems)
+                    .ThenInclude(si => si.Product)
+                .FirstOrDefaultAsync(cancellationToken);
+        else
+            return await _context.Sales.AsNoTracking()
+            .Where(s => s.Id == saleId)
+            .Include(s => s.Customer)
             .Include(s => s.SaleItems)
-            .FirstOrDefaultAsync(s => s.Id == id);
-    }
-
-    public async Task<IPaginatedList<SaleEntity>> ListAsync(int pageNumber, int pageSize)
-    {
-        return await PaginatedList<SaleEntity>.CreateAsync(_context.Sales.AsNoTracking(), pageNumber, pageSize);
-    }
-
-    public async Task UpdateAsync(SaleEntity sale)
-    {
-        _context.Sales.Update(sale);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(Guid id)
-    {
-        var sale = await GetByIdAsync(id);
-        if (sale != null)
-        {
-            _context.Sales.Remove(sale);
-            await _context.SaveChangesAsync();
-        }
+                .ThenInclude(si => si.Product)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
