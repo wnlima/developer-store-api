@@ -17,6 +17,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public AuthControllerTests(HttpClientFixture clientFixture)
     {
         _clientFixture = clientFixture;
+        _clientFixture.BasicDataSeed().GetAwaiter().GetResult();
     }
 
 
