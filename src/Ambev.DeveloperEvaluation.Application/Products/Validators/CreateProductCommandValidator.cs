@@ -15,7 +15,7 @@ public class CreateProductCommandValidator : AbstractValidator<CreateProductComm
             .MaximumLength(1000);
 
         RuleFor(p => p.Price)
-            .GreaterThan(0);
+            .GreaterThan(0).WithMessage("Unit price must be greater than 0."); ;
 
         RuleFor(p => p.QuantityInStock)
             .GreaterThanOrEqualTo(0);

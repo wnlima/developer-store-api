@@ -11,6 +11,7 @@ public class DomainModuleInitializer : IModuleInitializer
     {
         builder.Services.AddScoped<IDiscountService, DiscountService>();
         builder.Services.AddScoped<IValidatorService, ValidatorExecutor>();
+        builder.Services.AddScoped<ISaleService, SaleService>();
 
     }
 }
