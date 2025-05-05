@@ -25,44 +25,7 @@ public class SaleConfiguration : IEntityTypeConfiguration<SaleEntity>
 
         builder.HasOne(s => s.Customer)
             .WithMany()
-            .HasForeignKey(s => s.UserId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-
-public class CartItemConfiguration : IEntityTypeConfiguration<CartItemEntity>
-{
-    public void Configure(EntityTypeBuilder<CartItemEntity> builder)
-    {
-        builder.ToTable("CartItems");
-
-        builder.HasKey(c => c.Id);
-        builder.Property(si => si.UserId)
-            .IsRequired();
-
-        builder.HasOne(ci => ci.Cart)
-            .WithMany(c => c.CartItems)
-            .HasForeignKey(ci => ci.CartId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(ci => ci.Product)
-            .WithMany()
-            .HasForeignKey(ci => ci.ProductId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Property(ci => ci.Quantity)
-            .IsRequired();
-
-        builder.Property(ci => ci.UnitPrice)
-            .IsRequired()
-            .HasColumnType("decimal(18, 2)");
-
-        builder.HasOne<UserEntity>()
-            .WithMany()
-            .HasForeignKey(si => si.UserId)
+            .HasForeignKey(s => s.CustomerId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
     }

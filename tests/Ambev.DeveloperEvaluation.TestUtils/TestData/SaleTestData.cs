@@ -1,4 +1,4 @@
-using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DTOs;
 using Bogus;
 
 namespace Ambev.DeveloperEvaluation.TestUtils.TestData;
@@ -13,21 +13,18 @@ public static class SaleTestData
     /// <summary>
     /// Faker instance for generating CreateSaleCommand objects with randomized and realistic data.
     /// </summary>
-    private static readonly Faker<SaleEntity> _faker = new Faker<SaleEntity>()
+    private static readonly Faker<CreateSaleRequest> _faker = new Faker<CreateSaleRequest>()
         .RuleFor(s => s.SaleNumber, f => f.Commerce.Ean13())
         .RuleFor(s => s.SaleDate, f => f.Date.Past(1)) // dentro do último ano
-        .RuleFor(s => s.TotalAmount, f => f.Finance.Amount(10, 1000))
-        .RuleFor(s => s.TotalItems, f => f.Random.Decimal(1, 100))
         .RuleFor(s => s.Branch, f => f.Company.CompanyName())
-        .RuleFor(s => s.IsCancelled, f => false)
-        .RuleFor(s => s.Customer, f => UserTestData.GenerateValidUser());
+        .RuleFor(s => s.IsCancelled, f => false);
 
     /// <summary>
     /// Generates a list of Sale objects.
     /// </summary>
     /// <param name="count">The number of sales to generate.</param>
     /// <returns>A list of Sale objects.</returns>
-    public static List<SaleEntity> Generate(int count)
+    public static List<CreateSaleRequest> Generate(int count)
     {
         return _faker.Generate(count);
     }
@@ -36,7 +33,7 @@ public static class SaleTestData
     /// Generates a single valid CreateSaleCommand object.
     /// </summary>
     /// <returns>A CreateSaleCommand object with valid data.</returns>
-    public static SaleEntity Generate()
+    public static CreateSaleRequest Generate()
     {
         return _faker.Generate();
     }

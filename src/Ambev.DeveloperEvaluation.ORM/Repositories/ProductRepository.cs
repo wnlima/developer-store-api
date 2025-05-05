@@ -13,6 +13,6 @@ public class ProductRepository : GenericRepository<ProductEntity>, IProductRepos
 
     public async Task<IEnumerable<ProductEntity>> GetProducts(Guid[] ids, CancellationToken cancellationToken = default)
     {
-        return await _context.Products.AsNoTracking().Where(p => ids.Contains(p.Id)).ToListAsync(cancellationToken);
+        return await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync(cancellationToken);
     }
 }

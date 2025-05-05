@@ -5,7 +5,7 @@ using Ambev.DeveloperEvaluation.Domain.Services;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Handlers;
 
-public class CancelSaleCommandHandler : IRequestHandler<CancelSaleCommand, bool>
+public class CancelSaleCommandHandler : IRequestHandler<ManagerCancelSaleCommand, bool>
 {
     private readonly ISaleService _service;
     private readonly IMapper _mapper;
@@ -16,7 +16,7 @@ public class CancelSaleCommandHandler : IRequestHandler<CancelSaleCommand, bool>
         _mapper = mapper;
     }
 
-    public async Task<bool> Handle(CancelSaleCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ManagerCancelSaleCommand request, CancellationToken cancellationToken)
     {
         await _service.CancelSale(request.Id, cancellationToken);
         return true;

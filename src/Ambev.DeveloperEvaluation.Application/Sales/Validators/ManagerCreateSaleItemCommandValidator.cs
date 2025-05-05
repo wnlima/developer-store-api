@@ -3,13 +3,10 @@ using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Validators;
 
-public class CreateSaleItemCommandValidator : AbstractValidator<CreateSaleItemCommand>
+public class ManagerCreateSaleItemCommandValidator : AbstractValidator<CreateSaleItemCommand>
 {
-    public CreateSaleItemCommandValidator()
+    public ManagerCreateSaleItemCommandValidator()
     {
-        RuleFor(x => x.CustomerId)
-            .NotEmpty().WithMessage("Customer is required.");
-
         RuleFor(item => item.ProductId)
             .NotEmpty().WithMessage("Product ID is required.");
 

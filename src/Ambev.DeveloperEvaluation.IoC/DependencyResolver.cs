@@ -13,6 +13,7 @@ public static class DependencyResolver
         new InfrastructureModuleInitializer().Initialize(builder);
         new WebApiModuleInitializer().Initialize(builder);
         new DomainModuleInitializer().Initialize(builder);
+        new EventModuleInitializer().Initialize(builder);
 
         builder.Services.AddJwtAuthentication(builder.Configuration);
     }

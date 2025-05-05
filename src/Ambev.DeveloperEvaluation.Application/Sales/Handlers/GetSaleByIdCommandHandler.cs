@@ -8,7 +8,7 @@ using Ambev.DeveloperEvaluation.Application.Salets.Validators;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Handlers;
 
-public class GetSaleByIdCommandHandler : IRequestHandler<GetSaleByIdCommand, SaleResult?>
+public class GetSaleByIdCommandHandler : IRequestHandler<GetSaleByIdCommand, SaleResult?>, IRequestHandler<ManagerGetSaleByIdCommand, SaleResult?>
 {
     private readonly ISaleRepository _SaleRepository;
     private readonly IMapper _mapper;
@@ -22,6 +22,22 @@ public class GetSaleByIdCommandHandler : IRequestHandler<GetSaleByIdCommand, Sal
     public async Task<SaleResult> Handle(GetSaleByIdCommand request, CancellationToken cancellationToken)
     {
         var validator = new GetSaleByIdValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+
+        var SaleEntity = await _SaleRepository.GetByIdAsync(request.Id);
+
+        if (SaleEntity == null)
+            throw new KeyNotFoundException($"Sale with ID {request.Id} not found");
+
+        return _mapper.Map<SaleResult>(SaleEntity);
+    }
+
+    public async Task<SaleResult> Handle(ManagerGetSaleByIdCommand request, CancellationToken cancellationToken)
+    {
+        var validator = new ManagerGetSaleByIdValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)

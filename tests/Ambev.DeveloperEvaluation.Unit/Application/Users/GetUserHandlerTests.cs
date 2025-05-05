@@ -54,11 +54,11 @@ public class GetUserHandlerTests
         // Arrange
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
-        var result = new GetUserResult { Id = user.Id };
+        var result = new UserResult { Id = user.Id };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<UserEntity?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);
@@ -91,11 +91,11 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
         user.Role = UserRole.Admin;
-        var result = new GetUserResult { Id = user.Id, Role = user.Role };
+        var result = new UserResult { Id = user.Id, Role = user.Role };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<UserEntity?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);
@@ -112,11 +112,11 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
         user.Status = UserStatus.Inactive;
-        var result = new GetUserResult { Id = user.Id, Status = user.Status };
+        var result = new UserResult { Id = user.Id, Status = user.Status };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<UserEntity?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);

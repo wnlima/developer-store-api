@@ -44,7 +44,7 @@ public class AuthController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<AuthenticateUserCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);

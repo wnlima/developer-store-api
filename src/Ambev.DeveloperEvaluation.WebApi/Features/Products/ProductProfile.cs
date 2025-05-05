@@ -15,14 +15,14 @@ public class ProductProfile : Profile
     public ProductProfile()
     {
         CreateMap<CreateProductRequest, CreateProductCommand>();
-        CreateMap<CreateProductResult, ProductResponse>();
+        CreateMap<ProductResult, ProductResponse>();
 
         CreateMap<UpdateProductRequest, UpdateProductCommand>();
-        CreateMap<UpdateProductResult, ProductResponse>();
+        CreateMap<ProductResult, ProductResponse>();
 
         CreateMap<DeleteProductRequest, DeleteProductCommand>();
         
         CreateMap<ListProductsRequest, ListProductsCommand>();
-        CreateMap<GetProductByIdResult, ProductResponse>();
+        CreateMap<ProductResult, ProductResponse>();
     }
 }

@@ -6,16 +6,21 @@ using AutoMapper;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Mappers;
 
-public class CreateSaleProfile : Profile
+public class SaleProfile : Profile
 {
-    public CreateSaleProfile()
+    public SaleProfile()
     {
-        CreateMap<CreateSaleCommand, SaleEntity>();
+        CreateMap<SaleEntity, SaleResult>()
+            .ForMember(dest => dest.SaleItems, opt => opt.MapFrom(src => src.SaleItems));
+
         CreateMap<SaleEntity, SaleResult>();
         CreateMap<SaleItemEntity, SaleItemResult>();
-        CreateMap<CreateSaleCommand, SaleEntity>();
-        CreateMap<CancelSaleCommand, SaleEntity>();
-        CreateMap<SaleEntity, SaleResult>();
+        CreateMap<ManagerCancelSaleCommand, SaleEntity>();
         CreateMap<PaginatedList<SaleEntity>, ListSalesResult>();
+
+        CreateMap<CreateSaleCommand, SaleEntity>()
+           .ForMember(dest => dest.SaleItems, opt => opt.MapFrom(src => src.SaleItems));
+     
+        CreateMap<CreateSaleItemCommand, SaleItemEntity>();
     }
 }

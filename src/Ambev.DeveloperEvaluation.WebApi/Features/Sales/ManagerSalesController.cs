@@ -19,7 +19,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class SalesController : BaseController
+public class ManagerSalesController : BaseController
 {
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
@@ -29,7 +29,7 @@ public class SalesController : BaseController
     /// </summary>
     /// <param name="mediator">The mediator instance</param>
     /// <param name="mapper">The AutoMapper instance</param>
-    public SalesController(IMediator mediator, IMapper mapper)
+    public ManagerSalesController(IMediator mediator, IMapper mapper)
     {
         _mediator = mediator;
         _mapper = mapper;
@@ -42,12 +42,11 @@ public class SalesController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created sale details</returns>
     [HttpPost]
-    [Authorize(Policy = "AnyRole")]
+    [Authorize(Policy = "ManagerOnly")]
     [ProducesResponseType(typeof(ApiResponseWithData<SaleResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateSaleRequest request, CancellationToken cancellationToken)
     {
-        request.CustomerId = GetCurrentUserId();
         var validator = new CreateSaleCommandValidator();
         var command = _mapper.Map<CreateSaleCommand>(request);
 
@@ -73,14 +72,14 @@ public class SalesController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The sale details if found</returns>
     [HttpGet("{id}")]
-    [Authorize(Policy = "AnyRole")]
+    [Authorize(Policy = "ManagerOnly")]
     [ProducesResponseType(typeof(ApiResponseWithData<SaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var request = new GetSaleByIdRequest(id, this.GetCurrentUserId());
-        var validator = new GetSaleByIdRequestValidator();
+        var request = new ManagerGetSaleByIdRequest(id);
+        var validator = new ManagerGetSaleByIdRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
@@ -119,7 +118,7 @@ public class SalesController : BaseController
     }
 
     [HttpGet]
-    [Authorize(Policy = "AnyRole")]
+    [Authorize(Policy = "ManagerOnly")]
     [SwaggerOperation(
     Summary = "List sales with advanced filtering, ordering and pagination",
     Description = """

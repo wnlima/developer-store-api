@@ -12,7 +12,6 @@ public class SaleItemEntity : BaseUserIdentityEntity
     public decimal TotalAmount { get; set; }
     public bool IsCancelled { get; set; }
     public ProductEntity Product { get; set; }
-    public SaleEntity Sale { get; set; }
     public UserEntity Customer { get; set; }
     public void CalculateTotalAmount()
     {

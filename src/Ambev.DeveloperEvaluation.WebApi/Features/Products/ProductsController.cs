@@ -6,6 +6,7 @@ using Ambev.DeveloperEvaluation.Application.Products.Validators;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products.Commands;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.Validators;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 
@@ -37,6 +38,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created product details</returns>
     [HttpPost]
+    [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request, CancellationToken cancellationToken)
@@ -47,7 +49,7 @@ public class ProductsController : BaseController
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var response = await _mediator.Send(command, cancellationToken);
 
@@ -66,6 +68,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated product details</returns>
     [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] UpdateProductRequest request, CancellationToken cancellationToken)
@@ -77,7 +80,7 @@ public class ProductsController : BaseController
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var response = await _mediator.Send(command, cancellationToken);
 
@@ -91,6 +94,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The product details if found</returns>
     [HttpGet("{id}")]
+    [Authorize(Policy = "AnyRole")]
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -101,7 +105,7 @@ public class ProductsController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<GetProductByIdCommand>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
@@ -119,6 +123,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success response if the product was deleted</returns>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -129,7 +134,7 @@ public class ProductsController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<DeleteProductCommand>(request.Id);
         await _mediator.Send(command, cancellationToken);
@@ -138,15 +143,15 @@ public class ProductsController : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListProducts(CancellationToken cancellationToken,
-    [FromQuery] Dictionary<string, string>? filters = null)
+    [Authorize(Policy = "AnyRole")]
+    public async Task<IActionResult> ListProducts(CancellationToken cancellationToken, [FromQuery] Dictionary<string, string>? filters = null)
     {
         var request = new ListProductsRequest(filters);
         var validator = new ListProductsRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<ListProductsCommand>(request);
         var result = await _mediator.Send(command, cancellationToken);

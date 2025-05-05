@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Validators;
 
-public class CancelSaleValidator : AbstractValidator<CancelSaleCommand>
+public class ManagerCancelSaleValidator : AbstractValidator<ManagerCancelSaleCommand>
 {
-    public CancelSaleValidator()
+    public ManagerCancelSaleValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()

@@ -17,6 +17,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public AuthControllerTests(HttpClientFixture clientFixture)
     {
         _clientFixture = clientFixture;
+        _clientFixture.UserSeed().GetAwaiter().GetResult();
     }
 
 
@@ -32,18 +33,18 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public async Task CreateUser_Expect_201_Created_On_Successful_User_Creation()
     {
         // Arrange
-        var data = CreateUserHandlerTestData.GenerateValidCommand();
+        var data = CreateUserHandlerTestData.GenerateCreateUserCommand();
         data.Status = Domain.Enums.UserStatus.Active;
         data.Role = Domain.Enums.UserRole.Customer;
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/users", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/users", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var responseContent = await response.Content.ReadAsStringAsync();
-        var apiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<CreateUserResponse>>(responseContent);
+        var apiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<UserResponse>>(responseContent);
 
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
@@ -57,11 +58,11 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public async Task CreateUser_Expect_400_Bad_Request_When_Username_Is_Missing()
     {
         // Arrange
-        var data = CreateUserHandlerTestData.GenerateValidCommand();
+        var data = CreateUserHandlerTestData.GenerateCreateUserCommand();
         data.Username = "";
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/users", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/users", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -72,13 +73,13 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     {
         // Arrange
         // First, create a user to retrieve
-        var createData = CreateUserHandlerTestData.GenerateValidCommand();
+        var createData = CreateUserHandlerTestData.GenerateCreateUserCommand();
         createData.Status = Domain.Enums.UserStatus.Active;
         createData.Role = Domain.Enums.UserRole.Customer;
 
-        var createResponse = await _clientFixture.Client.PostAsJsonAsync("/api/users", createData);
+        var createResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/users", createData, _clientFixture.ManagerUser.Token);
         var createResponseContent = await createResponse.Content.ReadAsStringAsync();
-        var createApiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<CreateUserResponse>>(createResponseContent);
+        var createApiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<UserResponse>>(createResponseContent);
 
         Assert.NotNull(createApiResponse);
         Assert.True(createApiResponse.Success);
@@ -88,7 +89,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var userId = createApiResponse.Data.Id;
 
         // Act
-        var getResponse = await _clientFixture.Client.GetAsync($"/api/users/{userId}");
+        var getResponse = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/users/{userId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -109,7 +110,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var invalidUserId = "invalid-guid";
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/users/{invalidUserId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/users/{invalidUserId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -122,7 +123,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var nonExistentUserId = Guid.NewGuid();
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/users/{nonExistentUserId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/users/{nonExistentUserId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -132,13 +133,13 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public async Task DeleteUser_Expect_200_OK_On_Successful_User_Deletion()
     {
         // Arrange
-        var createData = CreateUserHandlerTestData.GenerateValidCommand();
+        var createData = CreateUserHandlerTestData.GenerateCreateUserCommand();
         createData.Status = Domain.Enums.UserStatus.Active;
         createData.Role = Domain.Enums.UserRole.Customer;
 
-        var createResponse = await _clientFixture.Client.PostAsJsonAsync("/api/users", createData);
+        var createResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/users", createData, _clientFixture.ManagerUser.Token);
         var createResponseContent = await createResponse.Content.ReadAsStringAsync();
-        var createApiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<CreateUserResponse>>(createResponseContent);
+        var createApiResponse = JsonConvert.DeserializeObject<ApiResponseWithData<UserResponse>>(createResponseContent);
 
         Assert.NotNull(createApiResponse);
         Assert.True(createApiResponse.Success);
@@ -148,7 +149,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var userId = createApiResponse.Data.Id;
 
         // Act
-        var deleteResponse = await _clientFixture.Client.DeleteAsync($"/api/users/{userId}");
+        var deleteResponse = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/users/{userId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
@@ -167,7 +168,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var invalidUserId = "invalid-guid";
 
         // Act
-        var response = await _clientFixture.Client.DeleteAsync($"/api/users/{invalidUserId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/users/{invalidUserId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -180,7 +181,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var nonExistentUserId = Guid.NewGuid();
 
         // Act
-        var response = await _clientFixture.Client.DeleteAsync($"/api/users/{nonExistentUserId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/users/{nonExistentUserId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

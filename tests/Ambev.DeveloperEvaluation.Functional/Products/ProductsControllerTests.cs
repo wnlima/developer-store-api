@@ -33,7 +33,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Default_Pagination()
     {
         // Act
-        var response = await _clientFixture.Client.GetAsync("/api/products");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -52,7 +52,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Correct_Pagination()
     {
         // Act
-        var response = await _clientFixture.Client.GetAsync("/api/products?_page=2&_size=5");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products?_page=2&_size=5");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -71,7 +71,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_200_OK_And_Ordered_Results()
     {
         // Act
-        var response = await _clientFixture.Client.GetAsync("/api/products?_order=price desc");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products?_order=price desc");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -98,7 +98,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         string filterValue = expectd.Name;
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products?name={filterValue}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products?name={filterValue}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -123,7 +123,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         string partialName = expectd.Name.Substring(0, 5);
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products?name={partialName}*");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products?name={partialName}*");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -149,7 +149,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         decimal maxPrice = 20;
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products?_minPrice={minPrice}&_maxPrice={maxPrice}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products?_minPrice={minPrice}&_maxPrice={maxPrice}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -170,8 +170,8 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     public async Task ListProducts_Expect_400_Bad_Request_When_Page_Or_Size_Is_Invalid()
     {
         // Act
-        var response1 = await _clientFixture.Client.GetAsync("/api/products?_page=0");
-        var response2 = await _clientFixture.Client.GetAsync("/api/products?_size=0");
+        var response1 = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products?_page=0");
+        var response2 = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products?_size=0");
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response1.StatusCode);
@@ -185,7 +185,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         string nonExistentName = "NonExistentProduct";
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products?name={nonExistentName}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products?name={nonExistentName}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -206,7 +206,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var lastExpectd = _clientFixture.DbContext.Products.AsNoTracking().OrderByDescending(p => p.Price).ThenBy(p => p.Name).Take(10).Last();
 
         // Act
-        var response = await _clientFixture.Client.GetAsync("/api/products?_order=price desc,name asc");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/products?_order=price desc,name asc");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -231,7 +231,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var product = ProductTestData.GenerateValidCommand();
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/products", product);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/products", product, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -259,7 +259,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         product.Name = "";
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/products", product);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/products", product, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -272,7 +272,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var product = _clientFixture.DbContext.Products.AsNoTracking().First();
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products/{product.Id}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products/{product.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -293,7 +293,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var response = await _clientFixture.Client.GetAsync($"/api/products/{nonExistentId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/products/{nonExistentId}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -315,7 +315,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         };
 
         // Act
-        var response = await _clientFixture.Client.PutAsJsonAsync($"/api/products/{product.Id}", updatedProduct);
+        var response = await _clientFixture.RequestSend(HttpMethod.Put, $"/api/products/{product.Id}", updatedProduct, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -344,7 +344,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         };
 
         // Act
-        var response = await _clientFixture.Client.PutAsJsonAsync($"/api/products/{Guid.NewGuid()}", updatedProduct);
+        var response = await _clientFixture.RequestSend(HttpMethod.Put, $"/api/products/{Guid.NewGuid()}", updatedProduct, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -363,7 +363,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         };
 
         // Act
-        var response = await _clientFixture.Client.PutAsJsonAsync($"/api/products/{Guid.NewGuid()}", updatedProduct);
+        var response = await _clientFixture.RequestSend(HttpMethod.Put, $"/api/products/{Guid.NewGuid()}", updatedProduct, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -374,12 +374,12 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
     {
         // Arrange
         var product = ProductTestData.GenerateValidCommand();
-        var createResponse = await _clientFixture.Client.PostAsJsonAsync("/api/products", product);
+        var createResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/products", product, _clientFixture.ManagerUser.Token);
         createResponse.EnsureSuccessStatusCode();
         var createdProduct = await _clientFixture.DeserializeApiResponseWithData<ProductResult>(createResponse);
 
         // Act
-        var response = await _clientFixture.Client.DeleteAsync($"/api/products/{createdProduct.Data.Id}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/products/{createdProduct.Data.Id}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -392,7 +392,7 @@ public class ProductsControllerTests : IAsyncLifetime, IClassFixture<HttpClientF
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var response = await _clientFixture.Client.DeleteAsync($"/api/products/{nonExistentId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/products/{nonExistentId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

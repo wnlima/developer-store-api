@@ -1,9 +1,11 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
+using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using Ambev.DeveloperEvaluation.WebApi;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -17,6 +19,9 @@ public sealed class HttpClientFixture : IDisposable
     private HttpClient? _client;
     private bool _productSeedLoaded;
     private bool _saleSeedLoaded;
+    public AuthenticateUserResult ManagerUser;
+    public AuthenticateUserResult AdminUser;
+    public AuthenticateUserResult CustomerUser;
     private bool _userSeedLoaded;
     public readonly DefaultContext DbContext;
     public readonly IServiceScope _scope;
@@ -28,7 +33,7 @@ public sealed class HttpClientFixture : IDisposable
         DbContext = _scope.ServiceProvider.GetRequiredService<DefaultContext>();
     }
 
-    public HttpClient Client
+    HttpClient Client
     {
         get
         {
@@ -37,14 +42,11 @@ public sealed class HttpClientFixture : IDisposable
         }
     }
 
-    public IServiceProvider Services
-        => _factory.Services;
+    public IServiceProvider Services => _factory.Services;
 
-    public IConfigurationRoot Configuration
-        => _factory.Configuration;
+    public IConfigurationRoot Configuration => _factory.Configuration;
 
-    public static StringContent CreateContent<T>(T obj) where T : class
-        => new(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json");
+
 
     public void SetDIBehaviors(params Action<IServiceCollection>[] behaviors)
     {
@@ -64,31 +66,75 @@ public sealed class HttpClientFixture : IDisposable
         await ProductSeed();
     }
 
+    public async Task<HttpResponseMessage> RequestSend(HttpMethod httpMethod, string requestUri, string token = "")
+    {
+        var request = new HttpRequestMessage(httpMethod, requestUri);
+
+        if (string.IsNullOrEmpty(token))
+            token = CustomerUser.Token;
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return await Client.SendAsync(request);
+    }
+
+    public async Task<HttpResponseMessage> RequestSend<TValue>(HttpMethod httpMethod, string requestUri, TValue value = null, string token = "") where TValue : class
+    {
+        var request = new HttpRequestMessage(httpMethod, requestUri);
+
+        if (string.IsNullOrEmpty(token))
+            token = CustomerUser.Token;
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        if (value != null)
+        {
+            JsonContent content = JsonContent.Create(value, mediaType: null);
+            request.Content = content;
+        }
+
+        return await Client.SendAsync(request);
+    }
+
     public async Task UserSeed()
     {
         if (_userSeedLoaded)
             return;
 
-        var data = CreateUserHandlerTestData.GenerateValidCommand();
+        var mediator = _scope.ServiceProvider.GetRequiredService<IMediator>();
+
+        var data = CreateUserHandlerTestData.GenerateCreateUserCommand();
         data.Status = Domain.Enums.UserStatus.Active;
         data.Role = Domain.Enums.UserRole.Customer;
+        await mediator.Send(data);
 
-        var response = await Client.PostAsJsonAsync("/api/users", data);
-        response.EnsureSuccessStatusCode();
+        var auth = new AuthenticateUserCommand();
+        auth.Email = data.Email;
+        auth.Password = data.Password;
 
-        data = CreateUserHandlerTestData.GenerateValidCommand();
+        CustomerUser = await mediator.Send(auth);
+
+        data = CreateUserHandlerTestData.GenerateCreateUserCommand();
         data.Status = Domain.Enums.UserStatus.Active;
         data.Role = Domain.Enums.UserRole.Admin;
+        await mediator.Send(data);
 
-        response = await Client.PostAsJsonAsync("/api/users", data);
-        response.EnsureSuccessStatusCode();
+        auth = new AuthenticateUserCommand();
+        auth.Email = data.Email;
+        auth.Password = data.Password;
 
-        data = CreateUserHandlerTestData.GenerateValidCommand();
+        AdminUser = await mediator.Send(auth);
+
+        data = CreateUserHandlerTestData.GenerateCreateUserCommand();
         data.Status = Domain.Enums.UserStatus.Active;
         data.Role = Domain.Enums.UserRole.Manager;
+        await mediator.Send(data);
 
-        response = await Client.PostAsJsonAsync("/api/users", data);
-        response.EnsureSuccessStatusCode();
+        auth = new AuthenticateUserCommand();
+        auth.Email = data.Email;
+        auth.Password = data.Password;
+
+        ManagerUser = await mediator.Send(auth);
 
         _userSeedLoaded = true;
     }
@@ -102,7 +148,7 @@ public sealed class HttpClientFixture : IDisposable
 
         foreach (var product in items)
         {
-            var response = await Client.PostAsJsonAsync("/api/products", product);
+            var response = await RequestSend(HttpMethod.Post, "/api/products", product, ManagerUser.Token);
             response.EnsureSuccessStatusCode();
         }
 
@@ -118,7 +164,7 @@ public sealed class HttpClientFixture : IDisposable
 
         foreach (var value in items)
         {
-            var response = await Client.PostAsJsonAsync("/api/sales", value);
+            var response = await RequestSend(HttpMethod.Post, "/api/sales", value, ManagerUser.Token);
             response.EnsureSuccessStatusCode();
         }
 

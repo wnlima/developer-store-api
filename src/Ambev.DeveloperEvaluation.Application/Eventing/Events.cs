@@ -5,12 +5,12 @@ using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Application.Eventing;
 
-public class UserRegisteredEvent : MessageEvent<GetUserResult>, INotification
+public class UserRegisteredEvent : MessageEvent<UserResult>, INotification
 {
     public override string Source => "Developer Store API";
     public override string EventName => "UserRegistered";
     public override string EventVersion => "1.0.0";
-    public UserRegisteredEvent(GetUserResult data) : base(data)
+    public UserRegisteredEvent(UserResult data) : base(data)
     {
     }
 }

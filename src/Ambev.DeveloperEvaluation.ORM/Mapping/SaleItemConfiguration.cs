@@ -11,8 +11,8 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItemEntity>
         builder.ToTable("SaleItems");
 
         builder.HasKey(c => c.Id);
-        
-        builder.Property(si => si.UserId)
+
+        builder.Property(si => si.CustomerId)
             .IsRequired();
 
         builder.Property(si => si.Quantity)
@@ -27,12 +27,6 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItemEntity>
             .IsRequired()
             .HasColumnType("decimal(18, 2)");
 
-        builder.HasOne(si => si.Sale)
-            .WithMany(s => s.SaleItems)
-            .HasForeignKey(si => si.SaleId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne(si => si.Product)
             .WithMany()
             .HasForeignKey(si => si.ProductId)
@@ -41,7 +35,7 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItemEntity>
 
         builder.HasOne(s => s.Customer)
             .WithMany()
-            .HasForeignKey(s => s.UserId)
+            .HasForeignKey(s => s.CustomerId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
     }

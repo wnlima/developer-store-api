@@ -33,12 +33,15 @@ public class SaleService : ISaleService
 
         foreach (var item in sale.SaleItems)
         {
-            item.Product = products.First(p => p.Id == item.ProductId);
+            var p = products.First(p => p.Id == item.ProductId);
+            item.UnitPrice = p.Price;
             await _discountService.Apply(item);
+            p.QuantityInStock -= item.Quantity;
         }
 
         sale.Compute();
 
+        sale.Customer = null;
         await _saleRepository.CreateAsync(sale, cancellationToken);
 
         sale = (await _saleRepository.GetDetailsAsync(sale.Id, cancellationToken))!;
@@ -67,6 +70,7 @@ public class SaleService : ISaleService
         await _discountService.Apply(saleItem);
         sale.SaleItems.Add(saleItem);
         sale.Compute();
+        saleItem.Product = null;
 
         await _saleRepository.UpdateAsync(sale);
         await _notifier.SaleItemCreated(saleItem);

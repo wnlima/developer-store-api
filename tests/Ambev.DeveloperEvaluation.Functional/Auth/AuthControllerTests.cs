@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Xunit;
 using Ambev.DeveloperEvaluation.WebApi.Features.Auth.AuthenticateUserFeature;
 using Ambev.DeveloperEvaluation.WebApi.Common;
@@ -33,7 +32,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
     public async Task AuthenticateUser_Expect_200_OK_On_Successful_Authentication()
     {
         // Arrange
-        var newUser = CreateUserHandlerTestData.GenerateValidCommand();
+        var newUser = CreateUserHandlerTestData.GenerateCreateUserCommand();
         newUser.Status = Domain.Enums.UserStatus.Active;
         newUser.Role = Domain.Enums.UserRole.Customer;
 
@@ -52,7 +51,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         var newUserResponse = await mediator.Send(newUser, cancellationTokenSource.Token);
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/auth/login", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/auth/login", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -76,7 +75,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         };
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/auth/login", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/auth/login", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -92,7 +91,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         };
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/auth/login", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/auth/login", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -109,7 +108,7 @@ public class AuthControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixtu
         };
 
         // Act
-        var response = await _clientFixture.Client.PostAsJsonAsync("/api/auth/login", data);
+        var response = await _clientFixture.RequestSend(HttpMethod.Post, "/api/auth/login", data, _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

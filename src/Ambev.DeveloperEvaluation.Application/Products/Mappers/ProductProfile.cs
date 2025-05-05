@@ -12,9 +12,6 @@ public class ProductProfile : Profile
     {
         CreateMap<CreateProductCommand, ProductEntity>();
         CreateMap<UpdateProductCommand, ProductEntity>();
-        CreateMap<ProductEntity, CreateProductResult>();
-        CreateMap<ProductEntity, UpdateProductResult>();
-        CreateMap<ProductEntity, GetProductByIdResult>();
         CreateMap<ProductEntity, ProductResult>();
         CreateMap<PaginatedList<ProductEntity>, ListProductsResult>();
     }

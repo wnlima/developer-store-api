@@ -33,10 +33,10 @@ public class GetUserProfileTests
         };
 
         // Act
-        var result = _mapper.Map<GetUserResult>(user);
+        var result = _mapper.Map<UserResult>(user);
 
         // Assert
-        result.Should().BeEquivalentTo(new GetUserResult
+        result.Should().BeEquivalentTo(new UserResult
         {
             Id = user.Id,
             Email = user.Email,

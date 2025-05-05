@@ -1,9 +1,6 @@
-using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
-using Ambev.DeveloperEvaluation.Domain.Validation;
-using MediatR;
-
 namespace Ambev.DeveloperEvaluation.Application.Sales.Commands;
 
-public class ListSalesCommand : AbstractAdvancedFilter, IRequest<ListSalesResult>
+public class ListSalesCommand : ManagerListSalesCommand
 {
+    public Guid CustomerId { get; set; }
 }

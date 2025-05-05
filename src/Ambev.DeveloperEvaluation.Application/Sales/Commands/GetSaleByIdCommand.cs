@@ -1,13 +1,5 @@
-using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
-using MediatR;
-
 namespace Ambev.DeveloperEvaluation.Application.Sales.Commands;
-public class GetSaleByIdCommand : IRequest<SaleResult>
+public class GetSaleByIdCommand : ManagerGetSaleByIdCommand
 {
-    public Guid Id { get; set; }
-
-    public GetSaleByIdCommand(Guid id)
-    {
-        Id = id;
-    }
+    public Guid CustomerId { get; set; }
 }

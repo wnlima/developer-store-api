@@ -8,7 +8,7 @@ using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.Handlers;
 
-public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, UpdateProductResult>
+public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, ProductResult>
 {
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
@@ -19,7 +19,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         _mapper = mapper;
     }
 
-    public async Task<UpdateProductResult> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
+    public async Task<ProductResult> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
     {
         var validator = new UpdateProductCommandValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -36,6 +36,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
 
         await _productRepository.UpdateAsync(productEntity);
 
-        return _mapper.Map<UpdateProductResult>(productEntity);
+        return _mapper.Map<ProductResult>(productEntity);
     }
 }

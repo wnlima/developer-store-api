@@ -6,7 +6,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 /// <summary>
 /// API response model for CreateUser operation
 /// </summary>
-public class CreateUserResponse
+public class UserResponse
 {
     /// <summary>
     /// The unique identifier of the created user

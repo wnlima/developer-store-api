@@ -12,9 +12,9 @@ public class EventPublisherHandler :
             INotificationHandler<UserRegisteredEvent>,
             INotificationHandler<SaleItemCanceledEvent>
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<EventPublisherHandler> _logger;
 
-    public EventPublisherHandler(ILogger logger)
+    public EventPublisherHandler(ILogger<EventPublisherHandler> logger)
     {
         _logger = logger;
     }

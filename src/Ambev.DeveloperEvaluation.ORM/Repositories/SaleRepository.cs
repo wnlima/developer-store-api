@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,20 @@ public class SaleRepository : GenericRepository<SaleEntity>, ISaleRepository
     {
     }
 
+    public override IQueryable<SaleEntity> ApplyUserIdFilter(IQueryable<SaleEntity> query)
+    {
+        if (_customerId != Guid.Empty)
+            query = query.Where(o => o.CustomerId == _customerId);
+
+        return query;
+    }
+
     public async Task Cancel(Guid saleId, CancellationToken cancellationToken = default)
     {
         var saleToUpdate = new SaleEntity { Id = saleId, IsCancelled = true };
         _context.Sales.Attach(saleToUpdate);
         _context.Entry(saleToUpdate).Property(p => p.IsCancelled).IsModified = true;
-        await _context.SaveChangesAsync(cancellationToken);
+        await this.SaveAsync(cancellationToken);
     }
 
     public async Task<SaleEntity?> GetDetailsAsync(Guid saleId, CancellationToken cancellationToken = default, bool track = false)

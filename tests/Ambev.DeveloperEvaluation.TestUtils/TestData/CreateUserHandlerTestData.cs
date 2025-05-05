@@ -35,7 +35,7 @@ public static class CreateUserHandlerTestData
     /// that meet the system's validation requirements.
     /// </summary>
     /// <returns>A valid User entity with randomly generated data.</returns>
-    public static CreateUserCommand GenerateValidCommand()
+    public static CreateUserCommand GenerateCreateUserCommand()
     {
         return createUserHandlerFaker.Generate();
     }

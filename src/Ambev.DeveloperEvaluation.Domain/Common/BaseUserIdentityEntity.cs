@@ -15,7 +15,7 @@ public class BaseUserIdentityEntity : IIdentifier
     /// Gets or sets the unique identifier of the user.
     /// This property is used to identify the related user in other entities.
     /// </summary>
-    public Guid UserId { get; set; } = Guid.Empty;
+    public Guid CustomerId { get; set; } = Guid.Empty;
 
     public int CompareTo(BaseEntity? other)
     {

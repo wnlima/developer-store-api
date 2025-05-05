@@ -9,7 +9,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.Handlers;
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, CreateProductResult>
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ProductResult>
 {
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
@@ -20,7 +20,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         _mapper = mapper;
     }
 
-    public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    public async Task<ProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
         var validator = new CreateProductCommandValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
@@ -32,6 +32,6 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         productEntity = await _productRepository.CreateAsync(productEntity);
 
-        return _mapper.Map<CreateProductResult>(productEntity);
+        return _mapper.Map<ProductResult>(productEntity);
     }
 }

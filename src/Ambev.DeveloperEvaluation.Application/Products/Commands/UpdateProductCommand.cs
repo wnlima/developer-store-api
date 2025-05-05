@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.Commands;
 
-public class UpdateProductCommand : IRequest<UpdateProductResult>
+public class UpdateProductCommand : IRequest<ProductResult>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

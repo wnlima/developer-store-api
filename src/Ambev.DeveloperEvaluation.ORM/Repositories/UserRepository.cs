@@ -30,6 +30,7 @@ public class UserRepository : IUserRepository
     {
         await _context.Users.AddAsync(user, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        _context.ChangeTracker.Clear();
         return user;
     }
 
@@ -41,7 +42,7 @@ public class UserRepository : IUserRepository
     /// <returns>The user if found, null otherwise</returns>
     public async Task<UserEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Users.FirstOrDefaultAsync(o=> o.Id == id, cancellationToken);
+        return await _context.Users.FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
     }
 
     /// <summary>
@@ -70,6 +71,7 @@ public class UserRepository : IUserRepository
 
         _context.Users.Remove(user);
         await _context.SaveChangesAsync(cancellationToken);
+        _context.ChangeTracker.Clear();
         return true;
     }
 }

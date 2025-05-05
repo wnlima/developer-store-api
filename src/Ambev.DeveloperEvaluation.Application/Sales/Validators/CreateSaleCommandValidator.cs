@@ -23,12 +23,6 @@ public class CreateSaleCommandValidator : AbstractValidator<CreateSaleCommand>
             .NotEmpty().WithMessage("Sale must have at least one item.")
             .Must(HaveValidQuantities).WithMessage("Invalid quantity in sale items.");
 
-        // RuleFor(x => x.TotalAmount)
-        //     .GreaterThan(0).WithMessage("Total amount must be greater than zero.");
-
-        // RuleFor(x => x.TotalItems)
-        //     .GreaterThan(0).WithMessage("Total items must be greater than zero.");
-
         RuleFor(x => x.CustomerId)
             .NotEmpty().WithMessage("Customer is required.");
 

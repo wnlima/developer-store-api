@@ -39,7 +39,7 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user details</returns>
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResponseWithData<CreateUserResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponseWithData<UserResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
@@ -47,16 +47,16 @@ public class UsersController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<CreateUserCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Created(string.Empty, new ApiResponseWithData<CreateUserResponse>
+        return Created(string.Empty, new ApiResponseWithData<UserResponse>
         {
             Success = true,
             Message = "User created successfully",
-            Data = _mapper.Map<CreateUserResponse>(response)
+            Data = _mapper.Map<UserResponse>(response)
         });
     }
 
@@ -77,7 +77,7 @@ public class UsersController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<GetUserCommand>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
@@ -105,7 +105,7 @@ public class UsersController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<DeleteUserCommand>(request.Id);
         await _mediator.Send(command, cancellationToken);

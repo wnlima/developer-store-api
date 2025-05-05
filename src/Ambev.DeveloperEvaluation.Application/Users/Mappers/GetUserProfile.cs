@@ -13,6 +13,7 @@ public class GetUserProfile : Profile
     /// </summary>
     public GetUserProfile()
     {
-        CreateMap<UserEntity, GetUserResult>();
+        CreateMap<UserEntity, UserResult>();
+        
     }
 }

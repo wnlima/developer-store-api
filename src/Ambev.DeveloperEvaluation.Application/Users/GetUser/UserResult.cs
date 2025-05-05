@@ -3,9 +3,9 @@ using Ambev.DeveloperEvaluation.Domain.Enums;
 namespace Ambev.DeveloperEvaluation.Application.Users.GetUser;
 
 /// <summary>
-/// Response model for GetUser operation
+/// Response model for User operation
 /// </summary>
-public class GetUserResult
+public class UserResult
 {
     /// <summary>
     /// The unique identifier of the user
