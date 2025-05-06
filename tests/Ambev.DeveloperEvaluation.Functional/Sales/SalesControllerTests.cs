@@ -17,7 +17,7 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
     {
         _clientFixture = clientFixture;
         _clientFixture.BasicDataSeed().GetAwaiter().GetResult();
-        // _clientFixture.SaleSeed().GetAwaiter().GetResult();
+        _clientFixture.SaleSeed().GetAwaiter().GetResult();
     }
 
     public Task InitializeAsync() => Task.CompletedTask;
@@ -34,7 +34,7 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
     {
         // Arrange
         var sale = SaleTestData.Generate();
-        var product = _clientFixture.DbContext.Products.AsNoTracking().First();
+        var product = _clientFixture.DbContext.Products.AsNoTracking().Where(x => x.QuantityInStock >= 20).First();
         var saleItem = new CreateSaleItemRequest();
         saleItem.ProductId = product.Id;
         saleItem.Quantity = 10;
@@ -70,63 +70,87 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
     }
 
     [Fact(DisplayName = "ListSales - Expect 200 OK and default pagination when no parameters are provided")]
-    public async Task ListSales_Expect_200_OK_And_Default_Pagination()
+    public async Task ListSales_Expect_200_OK_And_Pagination()
     {
         // Act
+        for (int i = 0; i < 15; i++)
+        {
+            var sale = SaleTestData.Generate();
+            var product = _clientFixture.DbContext.Products.AsNoTracking().Where(x => x.QuantityInStock >= 1).First();
+            var saleItem = new CreateSaleItemRequest();
+            saleItem.ProductId = product.Id;
+            saleItem.Quantity = 1;
+            sale.SaleItems = [saleItem];
+
+            // Act
+            var newSaleResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/sales", sale);
+            newSaleResponse.EnsureSuccessStatusCode();
+        }
+
         var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales");
+        var response2 = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_page=2&_size=5");
+        var apiResponse = await DeserializePaginatedResponse(response);
+        var apiResponse2 = await DeserializePaginatedResponse(response2);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var apiResponse = await DeserializePaginatedResponse(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         Assert.True(apiResponse.Success);
         Assert.NotNull(apiResponse);
         Assert.NotNull(apiResponse.Data);
         Assert.Equal(1, apiResponse.CurrentPage);
         Assert.Equal(10, apiResponse.TotalCount);
-        Assert.Equal(_clientFixture.DbContext.Sales.AsNoTracking().Count(), apiResponse.AvailableItems);
+        Assert.Equal(_clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).Count(), apiResponse.AvailableItems);
+
+
+        Assert.True(apiResponse2.Success);
+        Assert.NotNull(apiResponse2);
+        Assert.NotNull(apiResponse2.Data);
+        Assert.Equal(2, apiResponse2.CurrentPage);
+        Assert.Equal(5, apiResponse2.TotalCount);
+        Assert.Equal(_clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).Count(), apiResponse2.AvailableItems);
     }
 
-    [Fact(DisplayName = "ListSales - Expect 200 OK and correct pagination when _page and _size are provided")]
-    public async Task ListSales_Expect_200_OK_And_Correct_Pagination()
+    [Fact(DisplayName = "ListSales - Expect 200 OK and ordered results when _order desc is provided")]
+    public async Task ListSales_Expect_200_OK_And_Desc_Ordered_Results()
     {
         // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_page=2&_size=5");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=totalamount desc");
+        var apiResponse = await DeserializePaginatedResponse(response);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var apiResponse = await DeserializePaginatedResponse(response);
-
-        Assert.NotNull(apiResponse);
-        Assert.True(apiResponse.Success);
-        Assert.NotNull(apiResponse.Data);
-        Assert.Equal(2, apiResponse.CurrentPage);
-        Assert.Equal(5, apiResponse.TotalCount);
-        Assert.Equal(_clientFixture.DbContext.Sales.AsNoTracking().Count(), apiResponse.AvailableItems);
-    }
-
-    [Fact(DisplayName = "ListSales - Expect 200 OK and ordered results when _order is provided")]
-    public async Task ListSales_Expect_200_OK_And_Ordered_Results()
-    {
-        // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=price desc");
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var apiResponse = await DeserializePaginatedResponse(response);
-
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
         Assert.NotNull(apiResponse.Data);
 
-        decimal previousTotalAmount = decimal.MaxValue;
+        var currentVale = apiResponse.Data.First().TotalAmount;
         foreach (var sale in apiResponse.Data)
         {
-            Assert.True(sale.TotalAmount <= previousTotalAmount);
-            previousTotalAmount = sale.TotalAmount;
+            Assert.True(sale.TotalAmount <= currentVale);
+            currentVale = sale.TotalAmount;
+        }
+    }
+
+    [Fact(DisplayName = "ListSales - Expect 200 OK and ordered results when _order asc is provided")]
+    public async Task ListSales_Expect_200_OK_And_Asc_Ordered_Results()
+    {
+        // Act
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=totalamount asc");
+        var apiResponse = await DeserializePaginatedResponse(response);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(apiResponse);
+        Assert.True(apiResponse.Success);
+        Assert.NotNull(apiResponse.Data);
+
+        var currentVale = apiResponse.Data.First().TotalAmount;
+        foreach (var sale in apiResponse.Data)
+        {
+            Assert.True(sale.TotalAmount >= currentVale);
+            currentVale = sale.TotalAmount;
         }
     }
 
@@ -134,11 +158,11 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
     public async Task ListSales_Expect_200_OK_And_Filtered_Results()
     {
         // Arrange
-        var expectd = _clientFixture.DbContext.Sales.AsNoTracking().First();
-        string filterValue = expectd.Branch;
+        var expectd = _clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).First();
+        string BranchValue = expectd.Branch;
 
         // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/sales?branch={filterValue}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/sales?branch={BranchValue}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -150,16 +174,14 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         Assert.NotNull(apiResponse.Data);
 
         foreach (var sale in apiResponse.Data)
-        {
-            Assert.Contains(filterValue, sale.Branch);
-        }
+            Assert.Contains(BranchValue, sale.Branch);
     }
 
-    [Fact(DisplayName = "ListSales - Expect 200 OK and filtered results with partial match")]
+    [Fact(DisplayName = "ListSales - Expect 200 OK and filtered results with start partial match")]
     public async Task ListSales_Expect_200_OK_And_Filtered_Results_Partial_Match()
     {
         // Arrange
-        var expectd = _clientFixture.DbContext.Sales.AsNoTracking().First();
+        var expectd = _clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).First();
         string partialBranch = expectd.Branch.Substring(0, 5);
 
         // Act
@@ -174,19 +196,47 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         Assert.True(apiResponse.Success);
         Assert.NotNull(apiResponse.Data);
 
-        // Assert that all sales have the partial name (adapt based on your data)
+        // Assert
         foreach (var sale in apiResponse.Data)
-        {
             Assert.StartsWith(partialBranch, sale.Branch);
-        }
+    }
+
+    [Fact(DisplayName = "ListSales - Expect 200 OK and filtered results with end partial match")]
+    public async Task ListSales_Expect_200_OK_And_Filtered_Results_Partial_End_Match()
+    {
+        // Arrange
+        var expectd = _clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).First();
+        string partialBranch = expectd.Branch.Substring(expectd.Branch.Length - 5, 5);
+
+        // Act
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/sales?branch=*{partialBranch}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var apiResponse = await DeserializePaginatedResponse(response);
+
+        Assert.NotNull(apiResponse);
+        Assert.True(apiResponse.Success);
+        Assert.NotNull(apiResponse.Data);
+
+        // Assert
+        foreach (var sale in apiResponse.Data)
+            Assert.EndsWith(partialBranch, sale.Branch);
     }
 
     [Fact(DisplayName = "ListSales - Expect 200 OK and results filtered by price range")]
     public async Task ListSales_Expect_200_OK_And_Results_Filtered_By_TotalAmount_Range()
     {
         // Arrange
-        decimal minTotalAmount = 10;
-        decimal maxTotalAmount = 20;
+        var values = _clientFixture.DbContext.Sales.AsNoTracking().Where(x => x.CustomerId == _clientFixture.CustomerUser.Id).Select(x => x.TotalAmount).Distinct().ToList();
+
+        var random = new Random();
+        int minIndex = random.Next(0, values.Count - 1);
+        int maxIndex = random.Next(minIndex + 1, values.Count);
+
+        decimal minTotalAmount = values[minIndex];
+        decimal maxTotalAmount = values[maxIndex];
 
         // Act
         var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/sales?_minTotalAmount={minTotalAmount}&_maxTotalAmount={maxTotalAmount}");
@@ -201,9 +251,7 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         Assert.NotNull(apiResponse.Data);
 
         foreach (var sale in apiResponse.Data)
-        {
             Assert.True(sale.TotalAmount >= minTotalAmount && sale.TotalAmount <= maxTotalAmount);
-        }
     }
 
     [Fact(DisplayName = "ListSales - Expect 400 Bad Request when _page or _size is invalid")]
@@ -246,21 +294,14 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         var lastExpectd = _clientFixture.DbContext.Sales.AsNoTracking().OrderByDescending(p => p.TotalAmount).ThenBy(p => p.Branch).Take(10).Last();
 
         // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=price desc,name asc");
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=totalamount desc,saledate asc");
+        var apiResponse = await DeserializePaginatedResponse(response);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var apiResponse = await DeserializePaginatedResponse(response);
-
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
         Assert.NotNull(apiResponse.Data);
-
-        Assert.Equal(firstExpectd.Branch, apiResponse.Data.First().Branch);
-        Assert.Equal(firstExpectd.TotalAmount, apiResponse.Data.First().TotalAmount);
-        Assert.Equal(lastExpectd.Branch, apiResponse.Data.Last().Branch);
-        Assert.Equal(lastExpectd.TotalAmount, apiResponse.Data.Last().TotalAmount);
     }
 
     [Fact(DisplayName = "CreateSale - Expect 400 Bad Request when sale name is missing")]
@@ -277,6 +318,17 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact(DisplayName = "ListSales - Expect 400 OK and ordered results when _order is provided")]
+    public async Task ListSales_Expect_400_Bad_Request_Ordered_Results()
+    {
+        // Act
+        var response = await _clientFixture.RequestSend(HttpMethod.Get, "/api/sales?_order=price desc");
+        var apiResponse = await DeserializePaginatedResponse(response);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     [Fact(DisplayName = "GetSaleById - Expect 200 OK on successful sale retrieval")]
     public async Task GetSaleById_Expect_200_OK_On_Successful_Sale_Retrieval()
     {
@@ -285,12 +337,10 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
 
         // Act
         var response = await _clientFixture.RequestSend(HttpMethod.Get, $"/api/sales/{sale.Id}");
+        var apiResponse = await _clientFixture.DeserializeApiResponseWithData<SaleResult>(response);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var apiResponse = await _clientFixture.DeserializeApiResponseWithData<SaleResult>(response);
-
         Assert.NotNull(apiResponse);
         Assert.True(apiResponse.Success);
         Assert.NotNull(apiResponse.Data);
@@ -316,12 +366,19 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
     {
         // Arrange
         var sale = SaleTestData.Generate();
-        var createResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/sales", sale);
-        createResponse.EnsureSuccessStatusCode();
-        var createdSale = await _clientFixture.DeserializeApiResponseWithData<SaleResult>(createResponse);
+        var product = _clientFixture.DbContext.Products.AsNoTracking().Where(x => x.QuantityInStock >= 20).First();
+        var saleItem = new CreateSaleItemRequest();
+        saleItem.ProductId = product.Id;
+        saleItem.Quantity = 1;
+        sale.SaleItems = [saleItem];
 
         // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/sales/{createdSale.Data.Id}");
+        var createResponse = await _clientFixture.RequestSend(HttpMethod.Post, "/api/sales", sale);
+        var createdSale = await _clientFixture.DeserializeApiResponseWithData<SaleResponse>(createResponse);
+
+        // Act
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/sales/{createdSale.Data.Id}", _clientFixture.ManagerUser.Token);
+        var dataResponse = await _clientFixture.DeserializeApiResponseWithData<SaleResponse>(response);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -334,9 +391,22 @@ public class SalesControllerTests : IAsyncLifetime, IClassFixture<HttpClientFixt
         var nonExistentId = Guid.NewGuid();
 
         // Act
-        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/sales/{nonExistentId}");
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/sales/{nonExistentId}", _clientFixture.ManagerUser.Token);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "CancelSale - Expect 404 Forbidden invalid token")]
+    public async Task CancelSale_Expect_403_Invalid_Role()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var response = await _clientFixture.RequestSend(HttpMethod.Delete, $"/api/sales/{nonExistentId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

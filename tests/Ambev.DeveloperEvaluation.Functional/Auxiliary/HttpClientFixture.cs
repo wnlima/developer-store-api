@@ -5,7 +5,9 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using Ambev.DeveloperEvaluation.WebApi;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DTOs;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -146,8 +148,12 @@ public sealed class HttpClientFixture : IDisposable
 
         var items = ProductTestData.GenerateProducts(25);
 
+        var bFirst = false;
         foreach (var product in items)
         {
+            if (!bFirst)
+                product.QuantityInStock = 100;
+
             var response = await RequestSend(HttpMethod.Post, "/api/products", product, ManagerUser.Token);
             response.EnsureSuccessStatusCode();
         }
@@ -160,11 +166,21 @@ public sealed class HttpClientFixture : IDisposable
         if (_saleSeedLoaded)
             return;
 
-        var items = SaleTestData.Generate(25);
+        var items = SaleTestData.Generate(11);
+        var products = await DbContext.Products.AsNoTracking().ToListAsync();
+        var pCount = products.Count;
+        Random random = new();
 
-        foreach (var value in items)
+        foreach (var sale in items)
         {
-            var response = await RequestSend(HttpMethod.Post, "/api/sales", value, ManagerUser.Token);
+            var pIdx = random.Next(pCount);
+            var product = products[pIdx];
+            var saleItem = new CreateSaleItemRequest();
+            saleItem.ProductId = product.Id;
+            saleItem.Quantity = 1;
+            sale.SaleItems = [saleItem];
+
+            var response = await RequestSend(HttpMethod.Post, "/api/sales", sale);
             response.EnsureSuccessStatusCode();
         }
 
