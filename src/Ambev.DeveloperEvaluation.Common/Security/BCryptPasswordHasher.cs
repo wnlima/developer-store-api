@@ -1,4 +1,4 @@
-using System;
+using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
 
 namespace Ambev.DeveloperEvaluation.Common.Security;
 

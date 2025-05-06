@@ -1,3 +1,5 @@
+using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
+using Ambev.DeveloperEvaluation.Domain.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

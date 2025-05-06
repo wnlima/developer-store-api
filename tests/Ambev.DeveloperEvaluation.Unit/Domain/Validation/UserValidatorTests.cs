@@ -1,6 +1,8 @@
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Validation;
-using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using Ambev.DeveloperEvaluation.TestUtils.TestData;
+using FluentAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
 
@@ -202,5 +204,48 @@ public class UserValidatorTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.Role);
+    }
+
+    [Fact(DisplayName = "Given valid user When validating Then should be valid")]
+    public void Validate_ValidUser_ShouldBeValid()
+    {
+        // Arrange
+        var user = new UserEntity
+        {
+            Username = "testuser",
+            Email = "test@example.com",
+            Password = "Password123!",
+            Phone = "+12345678901",
+            Status = UserStatus.Active,
+            Role = UserRole.Admin
+        };
+
+        // Act
+        var result = _validator.Validate(user);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact(DisplayName = "Given invalid email When validating Then should be invalid and have email error")]
+    public void Validate_InvalidEmail_ShouldBeInvalidAndHaveEmailError()
+    {
+        // Arrange
+        var user = new UserEntity
+        {
+            Username = "testuser",
+            Email = "invalid-email",
+            Password = "Password123!",
+            Phone = "+1234567890",
+            Status = UserStatus.Active,
+            Role = UserRole.Admin
+        };
+
+        // Act
+        var result = _validator.Validate(user);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Email");
     }
 }
