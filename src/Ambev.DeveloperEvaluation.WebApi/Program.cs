@@ -2,6 +2,7 @@ using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.IoC.Logging;
+using Ambev.DeveloperEvaluation.IoC.ModuleInitializers;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using Serilog;
 
@@ -35,6 +36,8 @@ public class Program
             );
 
             var app = builder.Build();
+            InfrastructureModuleInitializer.ApplyMigrate(app);
+
             app.UseMiddleware<ValidationExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
