@@ -1,11 +1,12 @@
 using Ambev.DeveloperEvaluation.Application.Sales.Commands;
+using Ambev.DeveloperEvaluation.Application.Sales.DTOs;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Validation;
 using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.Validators;
 
-public class ListSalesCommandValidator : AbstractAdvancedFilterValidator<ProductEntity, ListSalesCommand>
+public class ListSalesCommandValidator : AbstractAdvancedFilterValidator<SaleResult, ListSalesCommand>
 {
     public ListSalesCommandValidator() : base()
     {
@@ -14,4 +15,4 @@ public class ListSalesCommandValidator : AbstractAdvancedFilterValidator<Product
     }
 }
 
-public class ManagerListSalesCommandValidator : AbstractAdvancedFilterValidator<ProductEntity, ListSalesCommand> { }
+public class ManagerListSalesCommandValidator : AbstractAdvancedFilterValidator<SaleResult, ListSalesCommand> { }

@@ -1,10 +1,10 @@
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.DTOs;
 
-public class CancelSaleRequest
+public class ManagerCancelSaleRequest
 {
     public Guid Id { get; set; }
 
-    public CancelSaleRequest(Guid id)
+    public ManagerCancelSaleRequest(Guid id)
     {
         Id = id;
     }

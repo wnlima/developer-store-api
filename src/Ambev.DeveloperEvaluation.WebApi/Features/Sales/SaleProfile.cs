@@ -17,10 +17,11 @@ public class SaleProfile : Profile
     public SaleProfile()
     {
         CreateMap<CreateSaleItemRequest, CreateSaleItemCommand>();
-        CreateMap<CancelSaleRequest, ManagerCancelSaleCommand>();
+        CreateMap<ManagerCancelSaleRequest, ManagerCancelSaleCommand>();
         CreateMap<ListSalesRequest, ListSalesCommand>();
         CreateMap<SaleResult, SaleResponse>();
         CreateMap<SaleItemResult, SaleItemResponse>();
+        CreateMap<GetSaleByIdRequest, GetSaleByIdCommand>();
 
         CreateMap<CreateSaleRequest, CreateSaleCommand>()
             .ForMember(dest => dest.SaleItems, opt => opt.MapFrom(src => src.SaleItems))

@@ -36,7 +36,12 @@ public class SaleService : ISaleService
             var p = products.First(p => p.Id == item.ProductId);
             item.UnitPrice = p.Price;
             await _discountService.Apply(item);
+
+            if ((p.QuantityInStock - item.Quantity) <= 0)
+                throw new ValidationException("Product out of stock");
+
             p.QuantityInStock -= item.Quantity;
+
         }
 
         sale.Compute();

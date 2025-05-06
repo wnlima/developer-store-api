@@ -27,6 +27,33 @@ public abstract class AbstractAdvancedFilterValidator<Entity, Request> : Abstrac
             })
             .WithMessage(x => $"One or more filter fields are invalid. Allowed: {string.Join(", ", AllowedProperties)}");
         });
+
+        When(x => !string.IsNullOrEmpty(x.OrderBy), () =>
+          {
+              RuleFor(x => x.OrderBy).Must((request, v) => BeValidOrderBy(v))
+                .WithMessage(x => $"Invalid OrderBy fields. Allowed: {string.Join(", ", AllowedProperties)}");
+          });
+
+        When(x => x.OrderBy != null && x.OrderBy.Length > 0, () =>
+        {
+            RuleForEach(x => x.Filters!).Must((request, kvp) =>
+            {
+                if (kvp.Key.ToLower() == "_order")
+                {
+                    var values = kvp.Value.Split(',');
+                    foreach (var v in values)
+                    {
+                        var field = GetOrderFields(v);
+                        if (!AllowedProperties.Contains(field.ToLower()))
+                            return false;
+                    }
+                }
+
+                var cleanKey = CleanFieldName(kvp.Key);
+                return AllowedProperties.Contains(cleanKey.ToLower());
+            })
+            .WithMessage(x => $"One or more filter fields are invalid. Allowed: {string.Join(", ", AllowedProperties)}");
+        });
     }
 
     private string CleanFieldName(string input)
@@ -37,6 +64,34 @@ public abstract class AbstractAdvancedFilterValidator<Entity, Request> : Abstrac
             .Replace("_like", "", StringComparison.OrdinalIgnoreCase)
             .Replace("_in", "", StringComparison.OrdinalIgnoreCase)
             .Replace("_start", "", StringComparison.OrdinalIgnoreCase)
-            .Replace("_end", "", StringComparison.OrdinalIgnoreCase);
+            .Replace("_end", "", StringComparison.OrdinalIgnoreCase).Trim();
+    }
+
+    private bool BeValidOrderBy(string orderBy)
+    {
+        if (string.IsNullOrWhiteSpace(orderBy))
+            return true;
+
+        var values = orderBy.Split(',');
+        foreach (var v in values)
+        {
+            var field = GetOrderFields(v);
+            if (!AllowedProperties.Contains(field.ToLower()))
+                return false;
+        }
+
+        return true;
+    }
+    private string GetOrderFields(string input)
+    {
+        var r = input
+            .Replace("_min", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("_max", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("_like", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("_in", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("_start", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("_end", "", StringComparison.OrdinalIgnoreCase).Trim();
+
+        return r.Split(" ")[0];
     }
 }

@@ -86,7 +86,7 @@ public class SalesController : BaseController
         if (!validationResult.IsValid)
             return this.FailedResponse(validationResult.Errors);
 
-        var command = _mapper.Map<GetSaleByIdCommand>(request.Id);
+        var command = _mapper.Map<GetSaleByIdCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
 
         return Ok(_mapper.Map<SaleResponse>(response), "Sale retrieved successfully");
@@ -105,14 +105,14 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var request = new CancelSaleRequest(id);
+        var request = new ManagerCancelSaleRequest(id);
         var validator = new CancelSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return this.FailedResponse(validationResult.Errors);
 
-        var command = _mapper.Map<ManagerCancelSaleCommand>(request.Id);
+        var command = _mapper.Map<ManagerCancelSaleCommand>(request);
         await _mediator.Send(command, cancellationToken);
 
         return Sucess("Sale deleted successfully");
@@ -153,7 +153,9 @@ public class SalesController : BaseController
     public async Task<IActionResult> List(CancellationToken cancellationToken,
     [FromQuery] Dictionary<string, string>? filters = null)
     {
+
         var request = new ListSalesRequest(filters);
+        request.CustomerId = GetCurrentUserId();
         var validator = new ListSalesRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
