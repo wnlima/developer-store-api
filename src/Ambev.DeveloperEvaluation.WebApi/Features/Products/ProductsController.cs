@@ -7,6 +7,8 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Products.DTOs;
 using Ambev.DeveloperEvaluation.Application.Products.Commands;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.Validators;
 using Microsoft.AspNetCore.Authorization;
+using Swashbuckle.AspNetCore.Annotations;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 
@@ -41,6 +43,8 @@ public class ProductsController : BaseController
     [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request, CancellationToken cancellationToken)
     {
         var validator = new CreateProductCommandValidator();
@@ -71,6 +75,8 @@ public class ProductsController : BaseController
     [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateProduct([FromRoute] Guid id, [FromBody] UpdateProductRequest request, CancellationToken cancellationToken)
     {
         var validator = new UpdateProductCommandValidator();
@@ -98,6 +104,8 @@ public class ProductsController : BaseController
     [ProducesResponseType(typeof(ApiResponseWithData<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetProduct([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var request = new GetProductByIdRequest(id);
@@ -127,6 +135,8 @@ public class ProductsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DeleteProduct([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var request = new DeleteProductRequest(id);
@@ -142,8 +152,41 @@ public class ProductsController : BaseController
         return Sucess("Product deleted successfully");
     }
 
+
     [HttpGet]
     [Authorize(Policy = "AnyRole")]
+    [SwaggerOperation(
+Summary = "List sales with advanced filtering, ordering and pagination",
+Description = """
+    Supports dynamic filtering through query string parameters.
+
+    | Filter Type  | Example (Query String)
+    | ------------ | ----------------------
+    | Equals       | `?name=Beer`          
+    | Contains     | `?name=*bee*`         
+    | Starts With  | `?name=bee*`          
+    | Ends With    | `?name=*beer`         
+    | Greater Than | `?_minprice=10`       
+    | Less Than    | `?_maxprice=100`      
+
+    #### Ordering
+    Use `_order` query param with comma-separated fields.
+    Example: `?_order=price desc,name asc`
+
+    #### Pagination
+    Supported via:
+    - `_size` (default: 1)
+    - `_page` (default: 10)
+    """
+)]
+    [SwaggerResponse(StatusCodes.Status200OK, "Successful request", typeof(PaginatedList<ListProductsCommand>))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ApiResponse))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "No results found", typeof(ApiResponse))]
+    [ProducesResponseType(typeof(PaginatedList<ListProductsCommand>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ListProducts(CancellationToken cancellationToken, [FromQuery] Dictionary<string, string>? filters = null)
     {
         var request = new ListProductsRequest(filters);

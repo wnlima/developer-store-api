@@ -21,7 +21,7 @@ This project implements an API for managing sales records in a Developer Store.
 ### Configuration
 
 1.  Clone the repository.
-1.  Set up the database using `docker-compose.yml`.
+1.  Set up the database using `docker-compose.yml`, [see infrastructure setup guide](/.doc/setup-infrastructure.md).
 1.  Configure any necessary settings in `appsettings.json`.
 
 ### Running the API
@@ -35,10 +35,25 @@ dotnet run --project Ambev.DeveloperEvaluation.WebApi/Ambev.DeveloperEvaluation.
 ```bash
 dotnet test Ambev.DeveloperEvaluation.sln
 ```
+### Test Coverage
 
-### Code Conventions
-* Use of Git Flow for branch management
-* Use [Semantic Commits](/.doc/semantic-commit-messages.md) for commit messages
+Learn how to run code coverage analysis and generate HTML reports to identify untested parts of the system.
+
+[See more](/.doc/code-coverage.md)
+
+## Code Conventions
+
+This project adheres to the following code conventions to ensure consistency, readability, and maintainability:
+
+* **Git Flow:** We follow the Git Flow workflow for branch management. This provides a robust framework for managing feature development, releases, and hotfixes. For a comprehensive guide, please refer to the [Git Flow documentation](https://datasift.github.io/gitflow/OpenSourceProjectWorkflow.html).
+* **Semantic Commits:** Commit messages are structured using Semantic Commits. This convention helps to automate versioning, generate changelogs, and improve the clarity of the commit history.  More details can be found in the [Semantic Versioning specification](https://semver.org/).
+* **Migrations in ORM Layer:** Entity Framework Core Migrations are stored within the ORM layer (`src/Ambev.DeveloperEvaluation.ORM/Migrations`). This keeps database schema management closely aligned with the data access logic.
+* **C# Coding Standards:**
+    * PascalCase is used for class and method names (e.g., `UserService`, `GetUserName`).
+    * camelCase is used for variable and parameter names (e.g., `userName`, `productId`).
+* **Clean Architecture/Domain-Driven Design (DDD):** The project structure is organized based on Clean Architecture and Domain-Driven Design principles. This promotes separation of concerns, testability, and maintainability.
+* **Dependency Injection:** Dependency Injection (DI) is used extensively to achieve Inversion of Control (IoC). This enhances flexibility, decouples components, and simplifies unit testing.
+* **Design Patterns:** Common design patterns such as Repository, Unit of Work, and others are employed where appropriate to solve recurring design problems and improve code quality.
 
 ## Tech Stack
 This section lists the key technologies used in the project, including the backend, testing, frontend, and database components. 
@@ -57,6 +72,8 @@ This section includes links to the detailed documentation for the different API 
 - [Carts API](/.doc/carts-api.md)
 - [Users API](/.doc/users-api.md)
 - [Auth API](/.doc/auth-api.md)
+- [Authorization Policies](/.doc/authorization.md)
+
 
 ## Advanced Filtering
 Learn how the API supports dynamic filtering, ordering, and pagination for cleaner queries and extensible backends.

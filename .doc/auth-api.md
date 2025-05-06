@@ -15,8 +15,21 @@
 - Response: 
   ```json
   {
-    "token": "string"
+  "success": true,
+  "message": "string",
+  "errors": [
+    {
+      "error": "string",
+      "detail": "string"
+    }
+  ],
+  "data": {
+    "token": "string",
+    "email": "string",
+    "name": "string",
+    "role": "string"
   }
+}
   ```
 
 <br/>

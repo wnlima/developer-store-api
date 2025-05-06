@@ -76,7 +76,7 @@ public async Task<IActionResult> ListProducts(CancellationToken cancellationToke
     var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
-        return BadRequest(validationResult.Errors);
+        return this.FailedResponse(validationResult.Errors);
 
     var command = _mapper.Map<ListProductsCommand>(request);
     var result = await _mediator.Send(command, cancellationToken);
