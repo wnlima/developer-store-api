@@ -2,7 +2,7 @@ using Ambev.DeveloperEvaluation.Application.Users.GetUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
@@ -54,11 +54,11 @@ public class GetUserHandlerTests
         // Arrange
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
-        var result = new GetUserResult { Id = user.Id };
+        var result = new UserResult { Id = user.Id };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+            .Returns(Task.FromResult<UserEntity?>(user));
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);
@@ -75,7 +75,7 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(null));
+            .Returns(Task.FromResult<UserEntity?>(null));
 
         // Act
         var act = () => _handler.Handle(command, CancellationToken.None);
@@ -91,11 +91,11 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
         user.Role = UserRole.Admin;
-        var result = new GetUserResult { Id = user.Id, Role = user.Role };
+        var result = new UserResult { Id = user.Id, Role = user.Role };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+            .Returns(Task.FromResult<UserEntity?>(user));
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);
@@ -112,11 +112,11 @@ public class GetUserHandlerTests
         var command = new GetUserCommand(Guid.NewGuid());
         var user = UserTestData.GenerateValidUser();
         user.Status = UserStatus.Inactive;
-        var result = new GetUserResult { Id = user.Id, Status = user.Status };
+        var result = new UserResult { Id = user.Id, Status = user.Status };
 
         _userRepository.GetByIdAsync(command.Id, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<User?>(user));
-        _mapper.Map<GetUserResult>(user).Returns(result);
+            .Returns(Task.FromResult<UserEntity?>(user));
+        _mapper.Map<UserResult>(user).Returns(result);
 
         // Act
         var getUserResult = await _handler.Handle(command, CancellationToken.None);

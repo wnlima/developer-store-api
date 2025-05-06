@@ -6,8 +6,9 @@ public class PhoneValidator : AbstractValidator<string>
 {
     public PhoneValidator()
     {
-        RuleFor(phone => phone)
+        RuleFor(data => data)
             .NotEmpty().WithMessage("The phone cannot be empty.")
-            .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("The phone format is not valid.");
+            .Matches(@"^\+?[1-9]\d{1,14}$")
+            .WithMessage("Phone number must start with '+' followed by 11-15 digits.");
     }
 }

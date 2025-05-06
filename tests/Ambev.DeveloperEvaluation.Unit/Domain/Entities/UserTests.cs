@@ -1,6 +1,6 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
-using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using FluentAssertions;
 using Xunit;
 
@@ -70,7 +70,7 @@ public class UserTests
     public void Given_InvalidUserData_When_Validated_Then_ShouldReturnInvalid()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Username = "",
             Password = UserTestData.GenerateInvalidPassword(),
@@ -92,7 +92,7 @@ public class UserTests
     public void Constructor_Should_Generate_NonEmptyId()
     {
         // Arrange & Act
-        var user = new User();
+        var user = new UserEntity();
         user.Id = Guid.NewGuid();
 
         // Assert
@@ -103,7 +103,7 @@ public class UserTests
     public void Deactivate_ValidUser_SetsStatusToInactiveAndUpdatedAt()
     {
         // Arrange
-        var user = new User { Status = UserStatus.Active };
+        var user = new UserEntity { Status = UserStatus.Active };
 
         // Act
         user.Deactivate();
@@ -117,7 +117,7 @@ public class UserTests
     public void CompareTo_NullUser_ShouldReturn1()
     {
         // Arrange
-        var user = new User { Username = "alice" };
+        var user = new UserEntity { Username = "alice" };
 
         // Act & Assert
         Assert.True(user.CompareTo(null) == 1);

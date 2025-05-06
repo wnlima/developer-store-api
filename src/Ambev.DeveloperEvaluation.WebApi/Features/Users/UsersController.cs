@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Application.Users.GetUser;
 using Ambev.DeveloperEvaluation.Application.Users.DeleteUser;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
@@ -39,24 +40,27 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user details</returns>
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResponseWithData<CreateUserResponse>), StatusCodes.Status201Created)]
+    [Authorize(Policy = "AdminOrManager")]
+    [ProducesResponseType(typeof(ApiResponseWithData<UserResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var validator = new CreateUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<CreateUserCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Created(string.Empty, new ApiResponseWithData<CreateUserResponse>
+        return Created(string.Empty, new ApiResponseWithData<UserResponse>
         {
             Success = true,
             Message = "User created successfully",
-            Data = _mapper.Map<CreateUserResponse>(response)
+            Data = _mapper.Map<UserResponse>(response)
         });
     }
 
@@ -67,9 +71,12 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user details if found</returns>
     [HttpGet("{id}")]
+    [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponseWithData<GetUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetUser([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var request = new GetUserRequest { Id = id };
@@ -77,17 +84,15 @@ public class UsersController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<GetUserCommand>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponseWithData<GetUserResponse>
-        {
-            Success = true,
-            Message = "User retrieved successfully",
-            Data = _mapper.Map<GetUserResponse>(response)
-        });
+        return Ok(
+            _mapper.Map<GetUserResponse>(response),
+             "User retrieved successfully"
+        );
     }
 
     /// <summary>
@@ -97,9 +102,12 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success response if the user was deleted</returns>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOrManager")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var request = new DeleteUserRequest { Id = id };
@@ -107,15 +115,11 @@ public class UsersController : BaseController
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+            return this.FailedResponse(validationResult.Errors);
 
         var command = _mapper.Map<DeleteUserCommand>(request.Id);
         await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponse
-        {
-            Success = true,
-            Message = "User deleted successfully"
-        });
+        return Sucess("User deleted successfully");
     }
 }

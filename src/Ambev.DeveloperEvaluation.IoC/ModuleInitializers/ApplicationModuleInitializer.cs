@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Common.Security;
+﻿using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
+using Ambev.DeveloperEvaluation.Common.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 

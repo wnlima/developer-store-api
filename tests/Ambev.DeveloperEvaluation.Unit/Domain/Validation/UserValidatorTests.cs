@@ -1,7 +1,7 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Validation;
-using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
+using Ambev.DeveloperEvaluation.TestUtils.TestData;
 using FluentAssertions;
 using FluentValidation.TestHelper;
 using Xunit;
@@ -210,7 +210,7 @@ public class UserValidatorTests
     public void Validate_ValidUser_ShouldBeValid()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Username = "testuser",
             Email = "test@example.com",
@@ -231,7 +231,7 @@ public class UserValidatorTests
     public void Validate_InvalidEmail_ShouldBeInvalidAndHaveEmailError()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Username = "testuser",
             Email = "invalid-email",

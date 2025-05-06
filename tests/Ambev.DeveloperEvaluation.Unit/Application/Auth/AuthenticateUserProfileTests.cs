@@ -20,7 +20,7 @@ public class AuthenticateUserProfileTests
     public void Map_User_To_AuthenticateUserResult_ShouldMapCorrectly()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = "testuser",

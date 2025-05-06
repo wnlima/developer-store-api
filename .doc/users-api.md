@@ -13,7 +13,7 @@
   {
     "data": [
       {
-        "id": "integer",
+        "id": "uuid",
         "email": "string",
         "username": "string",
         "password": "string",

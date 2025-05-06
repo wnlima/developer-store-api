@@ -21,7 +21,7 @@ public class GetUserProfileTests
     public void Map_User_To_GetUserResult_ShouldMapCorrectly()
     {
         // Arrange
-        var user = new User
+        var user = new UserEntity
         {
             Id = Guid.NewGuid(),
             Username = "testuser",
@@ -33,10 +33,10 @@ public class GetUserProfileTests
         };
 
         // Act
-        var result = _mapper.Map<GetUserResult>(user);
+        var result = _mapper.Map<UserResult>(user);
 
         // Assert
-        result.Should().BeEquivalentTo(new GetUserResult
+        result.Should().BeEquivalentTo(new UserResult
         {
             Id = user.Id,
             Email = user.Email,

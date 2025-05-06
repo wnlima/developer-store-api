@@ -1,4 +1,4 @@
-using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.Common.Abstractions.Security;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Specifications;
 using MediatR;
@@ -40,6 +40,7 @@ namespace Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser
 
             return new AuthenticateUserResult
             {
+                Id = user.Id,
                 Token = token,
                 Email = user.Email,
                 Name = user.Username,
